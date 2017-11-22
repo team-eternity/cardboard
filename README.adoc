@@ -1,0 +1,5 @@
+Cardboard
+===================
+
+Cardboard is a standalone Doom-style renderer by Stephen ``SoM'' McGranahan,
+capable of 8-bit paletted graphics, as well as 16 and 32-bit truecolour.
