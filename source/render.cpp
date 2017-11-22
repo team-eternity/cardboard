@@ -35,7 +35,7 @@ float    cliptop[MAX_WIDTH], clipbot[MAX_WIDTH];
 
 void loadTextures(void)
 {
-   texture = vidSurface::loadBMPFile("texture.bmp");
+   texture = vidSurface::loadBMPFile("../texture.bmp");
    if(!texture)
       exit(0);
 
@@ -612,6 +612,10 @@ void projectWall(mapline_t *line)
    //                               y
    
    float top1, top2, high1, high2, low1, low2, bottom1, bottom2;
+
+   // MaxW: These need initialising, otherwise low1 gets used before assigned a value
+   // FIXME: Is this correct?
+   top1 = top2 = high1 = high2 = low1 = low2 = bottom1 = bottom2 = 0.0f;
 
    if(!backsector)
    {

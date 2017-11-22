@@ -7,6 +7,11 @@
 
 vidSurface *screen;
 
+// MaxW: Win32 doesn't need SDL main.
+// TODO: platform.h?
+#if defined(_MSC_VER) || defined(__CYGWIN__) || defined(__MINGW32__)
+#undef main
+#endif
 
 int main (int argc, char **argv)
 {
