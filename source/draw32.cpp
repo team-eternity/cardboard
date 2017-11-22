@@ -266,8 +266,8 @@ void drawSlopedSpan32(void)
       int v = (int)(64.0f * iv * mul);
       unsigned texl = (v & 63) * 64 + (u & 63);
 
-      *dest = ((((src[texl] & 0xFF) * (g >> 16))
-         | (((src[texl] & 0xFF00) * (b >> 16)) & 0xFF0000)
+      *dest = ((((src[texl] & 0xFF) * (b >> 16))
+         | (((src[texl] & 0xFF00) * (g >> 16)) & 0xFF0000)
          | ((src[texl] * (r >> 16)) & 0xFF000000))) >> 8;
       dest++;
 
@@ -349,8 +349,8 @@ void drawSlopedSpan32(void)
       {
          Uint32 texl = src[((vfrac >> 10) & 0xFC0) + ((ufrac >> 16) & 0x3F)];
 
-         *dest = ((((texl & 0xFF) * (g >> 16))
-            | (((texl & 0xFF00) * (b >> 16)) & 0xFF0000)
+         *dest = ((((texl & 0xFF) * (b >> 16))
+            | (((texl & 0xFF00) * (g >> 16)) & 0xFF0000)
             | ((texl * (r >> 16)) & 0xFF000000))) >> 8;
          dest++;
 
@@ -394,8 +394,8 @@ void drawSlopedSpanFog32(void)
       int v = (int)(64.0f * iv * mul);
       unsigned texl = (v & 63) * 64 + (u & 63);
 
-      *dest = ((((src[texl] & 0xFF) * (g >> 16))
-         | (((src[texl] & 0xFF00) * (b >> 16)) & 0xFF0000)
+      *dest = ((((src[texl] & 0xFF) * (b >> 16))
+         | (((src[texl] & 0xFF00) * (g >> 16)) & 0xFF0000)
          | ((src[texl] * (r >> 16)) & 0xFF000000))) >> 8;
       dest++;
 
@@ -436,8 +436,8 @@ void drawSlopedSpanFog32(void)
       {
          Uint32 texl = src[((vfrac >> 10) & 0xFC0) + ((ufrac >> 16) & 0x3F)];
 
-         *dest = ((((texl & 0xFF) * (g >> 16))
-            | (((texl & 0xFF00) * (b >> 16)) & 0xFF0000)
+         *dest = ((((texl & 0xFF) * (b >> 16))
+            | (((texl & 0xFF00) * (g >> 16)) & 0xFF0000)
             | ((texl * (r >> 16)) & 0xFF000000))) >> 8;
          dest++;
 
