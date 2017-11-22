@@ -200,8 +200,8 @@ void drawSpan32(void)
 
    while(count--)
    {
-      *dest = ((((source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)] & 0xFF) * g)
-         | (((source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)] & 0xFF00) * b) & 0xFF0000)
+      *dest = ((((source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)] & 0xFF) * b)
+         | (((source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)] & 0xFF00) * g) & 0xFF0000)
          | ((source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)] * r) & 0xFF000000))) >> 8;
       dest++;
       xf += xs;
@@ -308,8 +308,8 @@ void drawSlopedSpan32(void)
       {
          Uint32 texl = src[((vfrac >> 10) & 0xFC0) + ((ufrac >> 16) & 0x3F)];
 
-         *dest = ((((texl & 0xFF) * (g >> 16))
-            | (((texl & 0xFF00) * (b >> 16)) & 0xFF0000)
+         *dest = ((((texl & 0xFF) * (b >> 16))
+            | (((texl & 0xFF00) * (g >> 16)) & 0xFF0000)
             | ((texl * (r >> 16)) & 0xFF000000))) >> 8;
          dest++;
 
