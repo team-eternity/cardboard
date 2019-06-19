@@ -70,69 +70,70 @@ int main (int argc, char **argv)
 
       if(SDL_PollEvent(&e))
       {
-         if(e.type == SDL_ACTIVEEVENT && e.active.gain == 1)
-            update = true;
+         // FIXME/TODO
+         //if(e.type == SDL_ACTIVEEVENT && e.active.gain == 1)
+         //   update = true;
 
          if(e.type == SDL_KEYDOWN)
          {
-            switch(e.key.keysym.sym)
+            switch(e.key.keysym.scancode)
             {
-               case SDLK_UP:
+               case SDL_SCANCODE_UP:
                   up = true;
                   break;
-               case SDLK_DOWN:
+               case SDL_SCANCODE_DOWN:
                   down = true;
                   break;
-               case SDLK_LEFT:
+               case SDL_SCANCODE_LEFT:
                   left = true;
                   break;
-               case SDLK_RIGHT:
+               case SDL_SCANCODE_RIGHT:
                   right = true;
                   break;
-               case SDLK_PAGEUP:
+               case SDL_SCANCODE_PAGEUP:
                   pgup = true;
                   break;
-               case SDLK_PAGEDOWN:
+               case SDL_SCANCODE_PAGEDOWN:
                   pgdn = true;
                   break;
-               case SDLK_DELETE:
+               case SDL_SCANCODE_DELETE:
                   deletekey = true;
                   break;
-               case SDLK_END:
+               case SDL_SCANCODE_END:
                   endkey = true;
                   break;
 
-               case SDLK_ESCAPE:
+               case SDL_SCANCODE_ESCAPE:
                   return 0;
                   break;
             }
          }
          if(e.type == SDL_KEYUP)
          {
-            switch(e.key.keysym.sym)
+            switch(e.key.keysym.scancode)
             {
-               case SDLK_UP:
+               case SDL_SCANCODE_UP:
                   up = false;
                   break;
-               case SDLK_DOWN:
+               case SDL_SCANCODE_DOWN:
                   down = false;
                   break;
-               case SDLK_LEFT:
+               case SDL_SCANCODE_LEFT:
                   left = false;
                   break;
-               case SDLK_RIGHT:
+               case SDL_SCANCODE_RIGHT:
                   right = false;
                   break;
-               case SDLK_PAGEUP:
+               case SDL_SCANCODE_PAGEUP:
                   pgup = false;
                   break;
-               case SDLK_PAGEDOWN:
+               case SDL_SCANCODE_PAGEDOWN:
                   pgdn = false;
                   break;
-               case SDLK_DELETE:
+               case SDL_SCANCODE_DELETE:
                   deletekey = false;
                   break;
-               case SDLK_END:
+               case SDL_SCANCODE_END:
                   endkey = false;
                   break;
             }
@@ -216,7 +217,7 @@ int main (int argc, char **argv)
          else
             sprintf(title, "cardboard 0.0.1 by Stephen McGranahan (%i fps)", (int)(total / 30.0f));
 
-         SDL_WM_SetCaption(title, NULL);
+         //SDL_SetWindowTitle(TODO, title);
       }
 
       SDL_Delay(1);
