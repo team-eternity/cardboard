@@ -23,9 +23,9 @@
 #include "error.h"
 
 // 
-// Begin::vidSurface --------------------------------------------------------------------
+// Begin::vidDriver --------------------------------------------------------------------
 //
-vidSurface::vidSurface(unsigned int w, unsigned int h, Uint8 bits)
+vidDriver::vidDriver(unsigned int w, unsigned int h, Uint8 bits)
 {
    Uint32 rmask, gmask, bmask, amask;
 
@@ -50,7 +50,7 @@ vidSurface::vidSurface(unsigned int w, unsigned int h, Uint8 bits)
 
    s = SDL_CreateRGBSurface(SDL_HWSURFACE|SDL_SWSURFACE, w, h, bits, rmask, gmask, bmask, amask);
    if(!s)
-     basicError::Throw("vidSurface failed to allocate surface.\n");
+     basicError::Throw("vidDriver failed to allocate surface.\n");
 
    freesurface = true;
    locks = 0;
@@ -68,14 +68,14 @@ vidSurface::vidSurface(unsigned int w, unsigned int h, Uint8 bits)
 }
 
 
-vidSurface::vidSurface(SDL_Surface &from, bool owns)
+vidDriver::vidDriver(SDL_Surface &from, bool owns)
 {
    s = NULL;
    setSurface(from, owns);
 }
 
 
-vidSurface::~vidSurface()
+vidDriver::~vidDriver()
 {
    while(locks)
       unlock();
@@ -89,15 +89,15 @@ vidSurface::~vidSurface()
 }
 
 // Protected member variables -----------------------------------------------------------
-vidSurface *vidSurface::screensurface = NULL;
+vidDriver *vidDriver::screensurface = NULL;
 
 // Format management --------------------------------------------------------------------
-SDL_PixelFormat vidSurface::getFormat()
+SDL_PixelFormat vidDriver::getFormat()
 {
    return *s->format;
 }
 
-void vidSurface::convertFormat(SDL_PixelFormat &f)
+void vidDriver::convertFormat(SDL_PixelFormat &f)
 {
    if(isscreen)
       return;
@@ -116,7 +116,7 @@ void vidSurface::convertFormat(SDL_PixelFormat &f)
 }
 
 
-void vidSurface::convertFormat(vidSurface &surface)
+void vidDriver::convertFormat(vidDriver &surface)
 {
    if(isscreen)
       return;
@@ -130,7 +130,7 @@ void vidSurface::convertFormat(vidSurface &surface)
 }
 
 
-vidSurface  *vidSurface::getCopy()
+vidDriver  *vidDriver::getCopy()
 {
    SDL_Surface *copy = 
       SDL_CreateRGBSurfaceFrom(s->pixels, s->w, s->h, s->format->BitsPerPixel, s->pitch,
@@ -140,13 +140,13 @@ vidSurface  *vidSurface::getCopy()
    if(!copy)
       return NULL;
 
-   vidSurface *ret = new vidSurface(*copy, true);
+   vidDriver *ret = new vidDriver(*copy, true);
    return ret;
 }
 
 
 // Resize -------------------------------------------------------------------------------
-void vidSurface::resize(unsigned int neww, unsigned int newh)
+void vidDriver::resize(unsigned int neww, unsigned int newh)
 {
    if(isscreen)
    {
@@ -169,7 +169,7 @@ void vidSurface::resize(unsigned int neww, unsigned int newh)
 
 
 // Clipping -----------------------------------------------------------------------------
-void vidSurface::setClipRect(vidRect r)
+void vidDriver::setClipRect(vidRect r)
 {
    SDL_Rect sdlrect = r.getSDLRect();
 
@@ -180,7 +180,7 @@ void vidSurface::setClipRect(vidRect r)
 }
 
 
-vidRect vidSurface::getClipRect()
+vidRect vidDriver::getClipRect()
 {
    return vidRect(cliprect);
 }
@@ -194,7 +194,7 @@ vidRect vidSurface::getClipRect()
 //
 
 // Flipping and rotation ----------------------------------------------------------------
-void vidSurface::flipHorizontal()
+void vidDriver::flipHorizontal()
 {
    Uint8 *left, *right;
    Uint32 pixelsize, temp;
@@ -229,7 +229,7 @@ void vidSurface::flipHorizontal()
       unlock();
 }
 
-void vidSurface::flipVertical()
+void vidDriver::flipVertical()
 {
    int x, y;
    Uint8 *top, *bottom;
@@ -265,7 +265,7 @@ void vidSurface::flipVertical()
 }
 
 
-void vidSurface::rotate90()
+void vidDriver::rotate90()
 {
    SDL_Surface *ret;
    int x, y;
@@ -304,7 +304,7 @@ void vidSurface::rotate90()
 
 
 
-void vidSurface::rotate180()
+void vidDriver::rotate180()
 {
    SDL_Surface *ret;
    int x, y;
@@ -342,7 +342,7 @@ void vidSurface::rotate180()
 }
 
 
-void vidSurface::rotate270()
+void vidDriver::rotate270()
 {
    SDL_Surface *ret;
    int x, y;
@@ -382,7 +382,7 @@ void vidSurface::rotate270()
 
 
 // Primitives ---------------------------------------------------------------------------
-void vidSurface::drawPixel(int x, int y, Uint32 color)
+void vidDriver::drawPixel(int x, int y, Uint32 color)
 {
    int pixel;
    bool mustunlock = false;
@@ -415,8 +415,8 @@ void vidSurface::drawPixel(int x, int y, Uint32 color)
 }
 
 
-// vidSurface::drawLine uses helper functions 
-void vidSurface::drawLine(int x1, int y1, int x2, int y2, Uint32 color)
+// vidDriver::drawLine uses helper functions 
+void vidDriver::drawLine(int x1, int y1, int x2, int y2, Uint32 color)
 {
    bool mustunlock = false;
    
@@ -477,7 +477,7 @@ void vidSurface::drawLine(int x1, int y1, int x2, int y2, Uint32 color)
 
 
 
-void vidSurface::clear()
+void vidDriver::clear()
 {
    bool mustunlock = false;
    int  blocksize;
@@ -499,7 +499,7 @@ void vidSurface::clear()
 
 // Colors -------------------------------------------------------------------------------
 
-Uint32 vidSurface::mapColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+Uint32 vidDriver::mapColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
    if(s->format->Amask)
       return SDL_MapRGBA(s->format, r, g, b, a);
@@ -508,7 +508,7 @@ Uint32 vidSurface::mapColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 }
 
 
-void vidSurface::getColor(Uint32 color, Uint8 &r, Uint8 &g, Uint8 &b, Uint8 &a)
+void vidDriver::getColor(Uint32 color, Uint8 &r, Uint8 &g, Uint8 &b, Uint8 &a)
 {
    if(s->format->Amask)
       SDL_GetRGBA(color, s->format, &r, &g, &b, &a);
@@ -519,7 +519,7 @@ void vidSurface::getColor(Uint32 color, Uint8 &r, Uint8 &g, Uint8 &b, Uint8 &a)
 
 // Video stuffs -------------------------------------------------------------------------
 
-void vidSurface::lock()
+void vidDriver::lock()
 {
    if(mustlock)
       SDL_LockSurface(s);
@@ -529,7 +529,7 @@ void vidSurface::lock()
 }
 
 
-void vidSurface::unlock()
+void vidDriver::unlock()
 {
    if(locks)
    {
@@ -544,29 +544,29 @@ void vidSurface::unlock()
 
 
 // Image file functions -----------------------------------------------------------------
-bool vidSurface::saveBMPFile(string filename)
+bool vidDriver::saveBMPFile(string filename)
 {
    if(locks)
-      basicError::Throw("vidSurface::saveBMPFile called on a locked surface\n");
+      basicError::Throw("vidDriver::saveBMPFile called on a locked surface\n");
 
    return SDL_SaveBMP(s, filename.c_str()) ? false: true;
 }
 
 
-vidSurface *vidSurface::loadBMPFile(string filename)
+vidDriver *vidDriver::loadBMPFile(string filename)
 {
    SDL_Surface *surface = SDL_LoadBMP(filename.c_str());
-   vidSurface *ret;
+   vidDriver *ret;
 
    if(!surface)
       return NULL;
 
-   ret = new vidSurface(*surface, true);
+   ret = new vidDriver(*surface, true);
    return ret;
 }
 
 // Screen stuffs ------------------------------------------------------------------------
-vidSurface *vidSurface::setVideoMode(unsigned int w, unsigned int h, int bits, int sdlflags)
+vidDriver *vidDriver::setVideoMode(unsigned int w, unsigned int h, int bits, int sdlflags)
 {
    if(screensurface)
       screensurface->noLongerScreen();
@@ -575,18 +575,18 @@ vidSurface *vidSurface::setVideoMode(unsigned int w, unsigned int h, int bits, i
    if(!nsurface)
       return NULL;
 
-   screensurface = new vidSurface(*nsurface, false);
+   screensurface = new vidDriver(*nsurface, false);
    screensurface->isscreen = true;
    return screensurface;
 }
 
 
-vidSurface *vidSurface::resizeScreen(unsigned int w, unsigned int h)
+vidDriver *vidDriver::resizeScreen(unsigned int w, unsigned int h)
 {
    if(!screensurface)
       return NULL;
 
-   vidSurface *c = new vidSurface(w, h, screensurface->bitdepth);
+   vidDriver *c = new vidDriver(w, h, screensurface->bitdepth);
    screensurface->blitTo(*c, 0, 0, w, h, 0, 0);
 
    SDL_Surface *nsurface = SDL_SetVideoMode(w, h, screensurface->bitdepth, screensurface->s->flags);
@@ -606,7 +606,7 @@ vidSurface *vidSurface::resizeScreen(unsigned int w, unsigned int h)
 }
 
 
-void vidSurface::flipVideoPage()
+void vidDriver::flipVideoPage()
 {
    if(!screensurface)
       return;
@@ -621,7 +621,7 @@ void vidSurface::flipVideoPage()
 
 
 
-void vidSurface::updateRect(vidRect &r)
+void vidDriver::updateRect(vidRect &r)
 {
    if(!screensurface)
       return;
@@ -634,7 +634,7 @@ void vidSurface::updateRect(vidRect &r)
 
 
 // Protected helper functions -----------------------------------------------------------
-void vidSurface::noLongerScreen()
+void vidDriver::noLongerScreen()
 {
    if(!screensurface || s != screensurface->s)
       return;
@@ -653,7 +653,7 @@ void vidSurface::noLongerScreen()
 }
 
 // Helper function for drawLine
-void vidSurface::drawHLine(int x1, int x2, int y, Uint32 color)
+void vidDriver::drawHLine(int x1, int x2, int y, Uint32 color)
 {
    int swap = x1;
    int cx1 = cliprect.sx1();
@@ -703,7 +703,7 @@ void vidSurface::drawHLine(int x1, int x2, int y, Uint32 color)
 
 
 // Helper function for drawLine
-void vidSurface::drawVLine(int x, int y1, int y2, Uint32 color)
+void vidDriver::drawVLine(int x, int y1, int y2, Uint32 color)
 {
    int swap = y1;
    int cx1 = cliprect.sx1();
@@ -753,7 +753,7 @@ void vidSurface::drawVLine(int x, int y1, int y2, Uint32 color)
 
 
 // Helper function for drawLine
-void vidSurface::drawPositiveLine(int x1, int y1, int x2, int y2, Uint32 color)
+void vidDriver::drawPositiveLine(int x1, int y1, int x2, int y2, Uint32 color)
 {
    int cx1 = cliprect.sx1();
    int cx2 = cliprect.sx2();
@@ -891,7 +891,7 @@ void vidSurface::drawPositiveLine(int x1, int y1, int x2, int y2, Uint32 color)
 
 
 // Helper function for drawLine
-void vidSurface::drawNegativeLine(int x1, int y1, int x2, int y2, Uint32 color)
+void vidDriver::drawNegativeLine(int x1, int y1, int x2, int y2, Uint32 color)
 {
    int cx1 = cliprect.sx1();
    int cx2 = cliprect.sx2();
@@ -1026,7 +1026,7 @@ void vidSurface::drawNegativeLine(int x1, int y1, int x2, int y2, Uint32 color)
 }
 
 
-void vidSurface::setSurface(SDL_Surface &surface, bool owner)
+void vidDriver::setSurface(SDL_Surface &surface, bool owner)
 {
    SDL_Rect clipr;
 
@@ -1051,5 +1051,5 @@ void vidSurface::setSurface(SDL_Surface &surface, bool owner)
    isscreen = false;
 }
 //
-// End::vidSurface ----------------------------------------------------------------------
+// End::vidDriver ----------------------------------------------------------------------
 //

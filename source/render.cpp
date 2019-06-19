@@ -41,7 +41,7 @@ viewport_t view;
 renderfunc_t *render;
 
 // Screen buffer pointer
-vidSurface *texture = NULL;
+vidDriver *texture = NULL;
 
 
 
@@ -54,7 +54,7 @@ float    cliptop[MAX_WIDTH], clipbot[MAX_WIDTH];
 
 void loadTextures(void)
 {
-   texture = vidSurface::loadBMPFile("../texture.bmp");
+   texture = vidDriver::loadBMPFile("../texture.bmp");
    if(!texture)
       exit(0);
 

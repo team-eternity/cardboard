@@ -24,14 +24,14 @@
 #include "pixelmath.h"
 
 // 
-// Begin::vidSurface --------------------------------------------------------------------
+// Begin::vidDriver --------------------------------------------------------------------
 //
 
 // Blitting -----------------------------------------------------------------------------
-void vidSurface::blitTo(vidSurface &dest, vidRect srcrect, vidRect destrect)
+void vidDriver::blitTo(vidDriver &dest, vidRect srcrect, vidRect destrect)
 {
    if(locks || dest.locks)
-      basicError::Throw("vidSurface::blitTo called with a locked surface\n");
+      basicError::Throw("vidDriver::blitTo called with a locked surface\n");
 
    SDL_Rect r1 = srcrect.getSDLRect();
    SDL_Rect r2 = destrect.getSDLRect();
@@ -43,10 +43,10 @@ void vidSurface::blitTo(vidSurface &dest, vidRect srcrect, vidRect destrect)
 }
 
 
-void vidSurface::blitTo(vidSurface &dest, int srcx, int srcy, unsigned int w, unsigned int h, int destx, int desty)
+void vidDriver::blitTo(vidDriver &dest, int srcx, int srcy, unsigned int w, unsigned int h, int destx, int desty)
 {
    if(locks || dest.locks)
-      basicError::Throw("vidSurface::blitTo called with a locked surface\n");
+      basicError::Throw("vidDriver::blitTo called with a locked surface\n");
 
    SDL_Rect r1;
    SDL_Rect r2;
@@ -59,7 +59,7 @@ void vidSurface::blitTo(vidSurface &dest, int srcx, int srcy, unsigned int w, un
 }
 
 
-void vidSurface::stretchBlitTo(vidSurface &dest, vidRect srcrect, vidRect destrect)
+void vidDriver::stretchBlitTo(vidDriver &dest, vidRect srcrect, vidRect destrect)
 {
    bool lock1 = false, lock2 = false;
    Uint8 *srcrow, *destrow;// pointers to the current row
@@ -196,7 +196,7 @@ void vidSurface::stretchBlitTo(vidSurface &dest, vidRect srcrect, vidRect destre
 }
 
 
-void vidSurface::stretchBlitAddTo(vidSurface &dest, vidRect srcrect, vidRect destrect)
+void vidDriver::stretchBlitAddTo(vidDriver &dest, vidRect srcrect, vidRect destrect)
 {
    bool lock1 = false, lock2 = false;
    Uint8 *srcrow, *destrow;// pointers to the current row
@@ -325,7 +325,7 @@ void vidSurface::stretchBlitAddTo(vidSurface &dest, vidRect srcrect, vidRect des
 
 
 
-void vidSurface::stretchBlitTransTo(vidSurface &dest, vidRect srcrect, vidRect destrect, unsigned char amount)
+void vidDriver::stretchBlitTransTo(vidDriver &dest, vidRect srcrect, vidRect destrect, unsigned char amount)
 {
    bool lock1 = false, lock2 = false;
    Uint8 *srcrow, *destrow;// pointers to the current row
@@ -461,7 +461,7 @@ void vidSurface::stretchBlitTransTo(vidSurface &dest, vidRect srcrect, vidRect d
 
 
 
-void vidSurface::stretchBlitLitedTo(vidSurface &dest, vidRect srcrect, vidRect destrect, Uint8 rlight, Uint8 glight, Uint8 blight)
+void vidDriver::stretchBlitLitedTo(vidDriver &dest, vidRect srcrect, vidRect destrect, Uint8 rlight, Uint8 glight, Uint8 blight)
 {
    bool lock1 = false, lock2 = false;
    Uint8 *srcrow, *destrow;// pointers to the current row
@@ -603,7 +603,7 @@ void vidSurface::stretchBlitLitedTo(vidSurface &dest, vidRect srcrect, vidRect d
 
 
 
-/*void vidSurface::filterBlitTo(vidSurface &dest, vidRect srcrect, vidRect destrect)
+/*void vidDriver::filterBlitTo(vidDriver &dest, vidRect srcrect, vidRect destrect)
 {
    bool lock1 = false, lock2 = false;
    Uint8 *destrow, *destp;
@@ -652,5 +652,5 @@ void vidSurface::stretchBlitLitedTo(vidSurface &dest, vidRect srcrect, vidRect d
 
 
 //
-// End::vidSurface ----------------------------------------------------------------------
+// End::vidDriver ----------------------------------------------------------------------
 //
