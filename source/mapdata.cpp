@@ -142,24 +142,24 @@ void hackMapData(void)
 
    for(i = 0; i < vertexcount; i++)
       vertexlist[i].frameid = 0;
-   
+
    for(i = 0; i < sidecount; i++)
-      sidelist[i].sector = sectorlist + ((int)sidelist[i].sector - 1);
+      sidelist[i].sector = sectorlist + ((size_t)sidelist[i].sector - 1);
 
    for(i = 0; i < linecount; i++)
    {
       vector2f v1, v2;
 
-      linelist[i].sector1 = 
-         linelist[i].sector1 != NULL 
-         ? sectorlist + ((int)linelist[i].sector1 - 1)
+      linelist[i].sector1 =
+         linelist[i].sector1 != NULL
+         ? sectorlist + ((size_t)linelist[i].sector1 - 1)
          : NULL;
 
-      linelist[i].sector2 = 
+      linelist[i].sector2 =
          linelist[i].sector2 != NULL
-         ? sectorlist + ((int)linelist[i].sector2 - 1)
+         ? sectorlist + ((size_t)linelist[i].sector2 - 1)
          : NULL;
-      
+
       // Generate line length
       v1.x = linelist[i].v1->x;
       v1.y = linelist[i].v1->y;
