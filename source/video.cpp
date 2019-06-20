@@ -48,9 +48,30 @@ vidDriver::vidDriver(unsigned int w, unsigned int h, Uint8 bits)
          break;
    };
 
-   s = SDL_CreateRGBSurface(SDL_HWSURFACE|SDL_SWSURFACE, w, h, bits, rmask, gmask, bmask, amask);
+   window = SDL_CreateWindow(
+      "cardboard 0.0.2",
+      SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+      w, h, SDL_WINDOW_ALLOW_HIGHDPI
+   );
+
+   if(!window)
+      basicError::Throw("vidDriver failed to allocate window.\n");
+
+   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE);
+   if(!renderer)
+      basicError::Throw("vidDriver failed to allocate renderer.\n");
+
+   s = SDL_CreateRGBSurface(0, w, h, bits, rmask, gmask, bmask, amask);
    if(!s)
-     basicError::Throw("vidDriver failed to allocate surface.\n");
+     basicError::Throw("vidDriver failed to allocate primary surface.\n");
+
+   rgba_surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, SDL_PIXELFORMAT_RGBA32);
+   if(!rgba_surface)
+       basicError::Throw("vidDriver failed to allocate RGBA surface.\n");
+
+   texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, w, h);
+
+   destrect = { 0, 0, static_cast<int>(w), static_cast<int>(h) };
 
    freesurface = true;
    locks = 0;
@@ -104,8 +125,8 @@ void vidDriver::convertFormat(SDL_PixelFormat &f)
 
    Uint32 flags = 0;
 
-   if(f.Amask)
-      flags |= SDL_SRCALPHA;
+   //if(f.Amask)
+   //   flags |= SDL_SRCALPHA;
 
    SDL_Surface *nsurface = SDL_ConvertSurface(s, &f, flags);
 
@@ -146,26 +167,26 @@ vidDriver  *vidDriver::getCopy()
 
 
 // Resize -------------------------------------------------------------------------------
-void vidDriver::resize(unsigned int neww, unsigned int newh)
-{
-   if(isscreen)
-   {
-      resizeScreen(neww, newh);
-      return;
-   }
-
-
-   SDL_Surface *nsurface = 
-      SDL_CreateRGBSurface(s->flags, neww, newh, s->format->BitsPerPixel, s->format->Rmask, 
-                           s->format->Gmask, s->format->Bmask, s->format->Amask);
-
-   if(!nsurface)
-      return;
-
-   SDL_BlitSurface(s, NULL, nsurface, NULL);
-
-   setSurface(*nsurface, true);
-}
+//void vidDriver::resize(unsigned int neww, unsigned int newh)
+//{
+//   if(isscreen)
+//   {
+//      resizeScreen(neww, newh);
+//      return;
+//   }
+//
+//
+//   SDL_Surface *nsurface = 
+//      SDL_CreateRGBSurface(s->flags, neww, newh, s->format->BitsPerPixel, s->format->Rmask, 
+//                           s->format->Gmask, s->format->Bmask, s->format->Amask);
+//
+//   if(!nsurface)
+//      return;
+//
+//   SDL_BlitSurface(s, NULL, nsurface, NULL);
+//
+//   setSurface(*nsurface, true);
+//}
 
 
 // Clipping -----------------------------------------------------------------------------
@@ -571,39 +592,40 @@ vidDriver *vidDriver::setVideoMode(unsigned int w, unsigned int h, int bits, int
    if(screensurface)
       screensurface->noLongerScreen();
 
-   SDL_Surface *nsurface = SDL_SetVideoMode(w, h, bits, sdlflags);
-   if(!nsurface)
-      return NULL;
+   // FIXME/TODO: Can this be deleted?
+   //SDL_Surface *nsurface = SDL_SetVideoMode(w, h, bits, sdlflags);
+   //if(!nsurface)
+   //   return NULL;
 
-   screensurface = new vidDriver(*nsurface, false);
+   screensurface = new vidDriver(w, h, bits);
    screensurface->isscreen = true;
    return screensurface;
 }
 
 
-vidDriver *vidDriver::resizeScreen(unsigned int w, unsigned int h)
-{
-   if(!screensurface)
-      return NULL;
-
-   vidDriver *c = new vidDriver(w, h, screensurface->bitdepth);
-   screensurface->blitTo(*c, 0, 0, w, h, 0, 0);
-
-   SDL_Surface *nsurface = SDL_SetVideoMode(w, h, screensurface->bitdepth, screensurface->s->flags);
-   if(!nsurface)
-   {
-     fatalError::Throw("resizeScreen could not set new video mode %ix%ix%i\n", w, h, screensurface->bitdepth);
-     return NULL;
-   }
-
-   screensurface->setSurface(*nsurface, false);
-   screensurface->isscreen = true;
-   c->blitTo(*screensurface, 0, 0, w, h, 0, 0);
-
-   flipVideoPage();
-
-   return screensurface;
-}
+//vidDriver *vidDriver::resizeScreen(unsigned int w, unsigned int h)
+//{
+//   if(!screensurface)
+//      return NULL;
+//
+//   vidDriver *c = new vidDriver(w, h, screensurface->bitdepth);
+//   screensurface->blitTo(*c, 0, 0, w, h, 0, 0);
+//
+//   SDL_Surface *nsurface = SDL_SetVideoMode(w, h, screensurface->bitdepth, screensurface->s->flags);
+//   if(!nsurface)
+//   {
+//     fatalError::Throw("resizeScreen could not set new video mode %ix%ix%i\n", w, h, screensurface->bitdepth);
+//     return NULL;
+//   }
+//
+//   screensurface->setSurface(*nsurface, false);
+//   screensurface->isscreen = true;
+//   c->blitTo(*screensurface, 0, 0, w, h, 0, 0);
+//
+//   flipVideoPage();
+//
+//   return screensurface;
+//}
 
 
 void vidDriver::flipVideoPage()
@@ -615,22 +637,37 @@ void vidDriver::flipVideoPage()
       screensurface->unlock();
      //fatalError::Throw("flipVideoPage called while the screen surface was locked.\n");
 
-   SDL_Flip(screensurface->s);
+   if(screensurface->s)
+   {
+      SDL_BlitSurface(screensurface->s, nullptr, screensurface->rgba_surface, nullptr);
+      SDL_UpdateTexture(screensurface->texture, nullptr, screensurface->rgba_surface->pixels, screensurface->rgba_surface->pitch);
+      SDL_RenderCopy(screensurface->renderer, screensurface->texture, nullptr, &screensurface->destrect);
+   }
+
+   SDL_RenderPresent(screensurface->renderer);
 }
 
-
-
-
-void vidDriver::updateRect(vidRect &r)
+void vidDriver::updateWindowTitle(const char *title)
 {
    if(!screensurface)
       return;
 
-   if(screensurface->locks)
-     basicError::Throw("updateRect called while the screen surface was locked.\n");
-
-   SDL_UpdateRect(screensurface->s, r.rx(), r.ry(), r.rw(), r.rh());
+   SDL_SetWindowTitle(screensurface->window, title);
 }
+
+
+// FIXME/TODO
+//void vidDriver::updateRect(vidRect &r)
+//{
+//   if(!screensurface)
+//      return;
+//
+//   if(screensurface->locks)
+//     basicError::Throw("updateRect called while the screen surface was locked.\n");
+//
+//
+//   SDL_UpdateRect(screensurface->s, r.rx(), r.ry(), r.rw(), r.rh());
+//}
 
 
 // Protected helper functions -----------------------------------------------------------

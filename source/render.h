@@ -138,8 +138,8 @@ extern renderfunc_t *render;
 
 
 // Screen buffer pointer
-extern   vidSurface *screen;
-extern   vidSurface *texture;
+extern   vidDriver *screen;
+extern   vidDriver *texture;
 
 // Much like in doom. The screen clipping array starts out open and closes up as walls
 // are rendered.

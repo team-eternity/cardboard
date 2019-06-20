@@ -213,11 +213,11 @@ int main (int argc, char **argv)
             total += fps[i];
 
          if((int)(total / 30.0f) == 0)
-            sprintf(title, "cardboard 0.0.1 by Stephen McGranahan (1000 < fps)");
+            sprintf(title, "cardboard 0.0.2 by Stephen McGranahan (1000 < fps)");
          else
-            sprintf(title, "cardboard 0.0.1 by Stephen McGranahan (%i fps)", (int)(total / 30.0f));
+            sprintf(title, "cardboard 0.0.2 by Stephen McGranahan (%i fps)", (int)(total / 30.0f));
 
-         //SDL_SetWindowTitle(TODO, title);
+         vidDriver::updateWindowTitle(title);
       }
 
       SDL_Delay(1);

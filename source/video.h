@@ -56,7 +56,7 @@ class vidDriver
    // Resizes the surface. Any new area that's created (ie. taller or wider) will be on the 
    // bottom and right sides, and will be filled with 0 pixels. Any area that is removed
    // will be taken from the bottom and right sides.
-   void resize(unsigned int neww, unsigned int newh);
+   //void resize(unsigned int neww, unsigned int newh);
 
 
    // Clipping -----------------------------------------------------------------------------
@@ -175,11 +175,13 @@ class vidDriver
    static vidDriver *setVideoMode(unsigned int w, unsigned int h, int bits, int sdlflags);
    // Resizes the video. If the resize failed, a gFatalError is thrown. Returns a pointer
    // to the screen surface.
-   static vidDriver *resizeScreen(unsigned int w, unsigned int h);
+   //static vidDriver *resizeScreen(unsigned int w, unsigned int h);
    // Calls SDL_Flip with the current screen surface.
    static void flipVideoPage(void);
    // Updates a portion of the screen surface.
-   static void updateRect(vidRect &r);
+   //static void updateRect(vidRect &r);
+   // Updates the window title
+   static void updateWindowTitle(const char *title);
 
    protected:
    // Protected helper functions -----------------------------------------------------------
@@ -192,12 +194,17 @@ class vidDriver
    void setSurface(SDL_Surface &surface, bool owner);
 
    // Protected member variables -----------------------------------------------------------
-   SDL_Surface *s;
-   bool        freesurface, mustlock, abnormalpitch, isscreen;
-   Uint8       *buffer, bitdepth;
-   int         locks, pitch;
-   int         width, height;
-   vidRect       cliprect;
+   SDL_Window   *window;
+   SDL_Renderer *renderer;
+   SDL_Texture  *texture;
+   SDL_Surface  *s;
+   SDL_Surface  *rgba_surface;
+   SDL_Rect     destrect;
+   bool         freesurface, mustlock, abnormalpitch, isscreen;
+   Uint8        *buffer, bitdepth;
+   int          locks, pitch;
+   int          width, height;
+   vidRect      cliprect;
 
    static vidDriver  *screensurface;
 };
