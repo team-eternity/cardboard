@@ -40,8 +40,8 @@ int main (int argc, char **argv)
    float fps[30], total;
    int   index = -1, i;
 
-   putenv("SDL_VIDEO_WINDOW_POS=center");
-   putenv("SDL_VIDEO_CENTERED=1");
+   SDL_setenv("SDL_VIDEO_WINDOW_POS", "center", true);
+   SDL_setenv("SDL_VIDEO_CENTERED", "1", true);
    result = SDL_Init(SDL_INIT_TIMER|SDL_INIT_VIDEO);
 
    if(result == -1)
