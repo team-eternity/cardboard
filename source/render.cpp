@@ -54,7 +54,7 @@ float    cliptop[MAX_WIDTH], clipbot[MAX_WIDTH];
 
 void loadTextures(void)
 {
-   texture = vidDriver::loadBMPFile("../texture.bmp");
+   texture = vidDriver::loadBMPFile("../texture8.bmp");
    if(!texture)
       exit(0);
 
