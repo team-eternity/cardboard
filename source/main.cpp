@@ -106,6 +106,9 @@ int main (int argc, char **argv)
                case SDL_SCANCODE_ESCAPE:
                   return 0;
                   break;
+
+               default:
+                  break;
             }
          }
          if(e.type == SDL_KEYUP)
@@ -135,6 +138,8 @@ int main (int argc, char **argv)
                   break;
                case SDL_SCANCODE_END:
                   endkey = false;
+                  break;
+               default:
                   break;
             }
          }
