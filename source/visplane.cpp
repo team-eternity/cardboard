@@ -20,6 +20,7 @@
 
 #include <SDL.h>
 #include <math.h>
+#include <limits.h>
 #include "mapdata.h"
 #include "visplane.h"
 #include "video.h"

@@ -41,5 +41,6 @@ target_include_directories(cardboard SYSTEM PRIVATE
 )
 
 set_target_properties(cardboard PROPERTIES
+    CXX_STANDARD 11
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )

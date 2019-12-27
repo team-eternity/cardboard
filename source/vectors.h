@@ -68,7 +68,7 @@ class vector2f
 
 
    float    getLength() {return (lastlen = sqrtf(x * x + y * y));}
-   vector2f getNormal() 
+   vector2f getNormal()
    {
       lastlen = sqrtf(x * x + y * y);
       if(!lastlen)
@@ -77,13 +77,13 @@ class vector2f
       return vector2f(x / lastlen, y / lastlen);
    }
 
-   vector2f operator- (vector2f &other)
+   vector2f operator- (const vector2f &other) const
    {
       return vector2f(x - other.x, y - other.y);
    }
 
 
-   vector2f operator+ (vector2f &other)
+   vector2f operator+ (const vector2f &other) const
    {
       return vector2f(x + other.x, y + other.y);
    }

@@ -25,17 +25,17 @@
 #include <string>
 using namespace std;
 
-// vidSurface ------------------------------------------------------------------------------
+// vidDriver ------------------------------------------------------------------------------
 // Acts as a wrapper for SDLs surface functionality, plus some added functionality. When a
-// vidSurface 'owns' a SDL_Surface, that means the object will free the surface when the object
-// is destroyed. If a vidSurface object does not own a surface, it is up to the code that 
+// vidDriver 'owns' a SDL_Surface, that means the object will free the surface when the object
+// is destroyed. If a vidDriver object does not own a surface, it is up to the code that 
 // created the SDL_Surface to destroy that surface.
-class vidSurface
+class vidDriver
 {
    public:
-   vidSurface(unsigned int w, unsigned int h, Uint8 bits);
-   vidSurface(SDL_Surface &from, bool owns);
-   virtual ~vidSurface();
+   vidDriver(unsigned int w, unsigned int h, Uint8 bits);
+   vidDriver(SDL_Surface &from, bool owns);
+   virtual ~vidDriver();
 
 
    // Format management --------------------------------------------------------------------
@@ -44,19 +44,19 @@ class vidSurface
    // Converts the surface to the given pixel format
    void convertFormat(SDL_PixelFormat &f);
    // Converts the surface to the pixel format of the given surface.
-   void convertFormat(vidSurface &surface);
+   void convertFormat(vidDriver &surface);
    // Returns a copy of this surface.
-   vidSurface *getCopy();
+   vidDriver *getCopy();
    // Copys a given area of the surface and returns the new object. The input rect will
    // first be clipped to the surfaces rect. Returns NULL on error.
-   vidSurface *getCopy(vidRect area);
+   vidDriver *getCopy(vidRect area);
 
 
    // Resize -------------------------------------------------------------------------------
    // Resizes the surface. Any new area that's created (ie. taller or wider) will be on the 
    // bottom and right sides, and will be filled with 0 pixels. Any area that is removed
    // will be taken from the bottom and right sides.
-   void resize(unsigned int neww, unsigned int newh);
+   //void resize(unsigned int neww, unsigned int newh);
 
 
    // Clipping -----------------------------------------------------------------------------
@@ -76,26 +76,26 @@ class vidSurface
    // Blitting -----------------------------------------------------------------------------
    // Blits the surface into the destination surface. The width and the height are taken from
    // the source rectangle.
-   void blitTo(vidSurface &dest, vidRect srcrect, vidRect destrect);
+   void blitTo(vidDriver &dest, vidRect srcrect, vidRect destrect);
    // Blits the surface into the destination surface.
-   void blitTo(vidSurface &dest, int srcx, int srcy, unsigned int w, unsigned int h, 
+   void blitTo(vidDriver &dest, int srcx, int srcy, unsigned int w, unsigned int h, 
                int destx, int desty);
    // Blits the surface into the destination surface. The image is taken from srcrect of the 
    // surface and scaled to fit into destrect on the destination surface.
-   void stretchBlitTo(vidSurface &dest, vidRect srcrect, vidRect destrect);
+   void stretchBlitTo(vidDriver &dest, vidRect srcrect, vidRect destrect);
    // Blits the surface onto the destination surface using additive translucency. The image is 
    // taken from srcrect of the surface and scaled to fit into destrect on the destination 
    // surface.
-   void stretchBlitAddTo(vidSurface &dest, vidRect srcrect, vidRect destrect);
+   void stretchBlitAddTo(vidDriver &dest, vidRect srcrect, vidRect destrect);
    // Blits the surface onto the destination surface using integer translucency. The image 
    // is taken from srcrect of the surface and scaled to fit into destrect on the destination 
    // surface. Amount should be between 0 (source is transparent) to 255 (source is opaque)
-   void stretchBlitTransTo(vidSurface &dest, vidRect srcrect, vidRect destrect, unsigned char amount);
+   void stretchBlitTransTo(vidDriver &dest, vidRect srcrect, vidRect destrect, unsigned char amount);
    // Blits the surface into the destination surface. The image is taken from srcrect of the 
    // surface and scaled and filtered to fit into destrect on the destination surface.
-   void filterBlitTo(vidSurface &dest, vidRect srcrect, vidRect destrect);
+   void filterBlitTo(vidDriver &dest, vidRect srcrect, vidRect destrect);
    // Darkens a surface and blits it. For each color component, 255 is full bright, 0 is black
-   void stretchBlitLitedTo(vidSurface &dest, vidRect srcrect, vidRect destrect, Uint8 rlight, Uint8 glight, Uint8 blight);
+   void stretchBlitLitedTo(vidDriver &dest, vidRect srcrect, vidRect destrect, Uint8 rlight, Uint8 glight, Uint8 blight);
 
 
    // Flipping and rotation ----------------------------------------------------------------
@@ -161,25 +161,27 @@ class vidSurface
    // Saves the surface to a windows BMP file using the surfaces format. Returns true if the 
    // image was saved successfully, otherwise, returns false.
    bool saveBMPFile(string filename);
-   // Loads the given BMP file and returns a vidSurface object containing the image. If 
+   // Loads the given BMP file and returns a vidDriver object containing the image. If 
    // the file could not be loaded, the function returns NULL.
-   static vidSurface *loadBMPFile(string filename);
+   static vidDriver *loadBMPFile(string filename);
 
 
    // Screen stuffs ------------------------------------------------------------------------
-   // Sets the video mode and returns a vidSurface object containing the screen surface.
+   // Sets the video mode and returns a vidDriver object containing the screen surface.
    // If the function fails, NULL is returned. Use only this function to set the screen if you
    // plan on using any of the functions in this section. If this function is called more than
    // once, the previous screen surface is demoted to a regular surface and the current contents
    // of the screen are kept in it.
-   static vidSurface *setVideoMode(unsigned int w, unsigned int h, int bits, int sdlflags);
+   static vidDriver *setVideoMode(unsigned int w, unsigned int h, int bits, int sdlflags);
    // Resizes the video. If the resize failed, a gFatalError is thrown. Returns a pointer
    // to the screen surface.
-   static vidSurface *resizeScreen(unsigned int w, unsigned int h);
+   //static vidDriver *resizeScreen(unsigned int w, unsigned int h);
    // Calls SDL_Flip with the current screen surface.
    static void flipVideoPage(void);
    // Updates a portion of the screen surface.
-   static void updateRect(vidRect &r);
+   //static void updateRect(vidRect &r);
+   // Updates the window title
+   static void updateWindowTitle(const char *title);
 
    protected:
    // Protected helper functions -----------------------------------------------------------
@@ -192,14 +194,19 @@ class vidSurface
    void setSurface(SDL_Surface &surface, bool owner);
 
    // Protected member variables -----------------------------------------------------------
-   SDL_Surface *s;
-   bool        freesurface, mustlock, abnormalpitch, isscreen;
-   Uint8       *buffer, bitdepth;
-   int         locks, pitch;
-   int         width, height;
-   vidRect       cliprect;
+   SDL_Window   *window;
+   SDL_Renderer *renderer;
+   SDL_Texture  *texture;
+   SDL_Surface  *s;
+   SDL_Surface  *rgba_surface;
+   SDL_Rect     destrect;
+   bool         freesurface, mustlock, abnormalpitch, isscreen;
+   Uint8        *buffer, bitdepth;
+   int          locks, pitch;
+   int          width, height;
+   vidRect      cliprect;
 
-   static vidSurface  *screensurface;
+   static vidDriver  *screensurface;
 };
 
 
