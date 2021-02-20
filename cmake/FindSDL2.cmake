@@ -2,7 +2,7 @@
 
 # This code is licenced under the MIT License, which can be found at https://opensource.org/licenses/MIT
 
-find_path(SDL2_INCLUDE_DIRS
+find_path(SDL2_INCLUDE_DIR
    NAMES
       SDL.h
    HINTS
@@ -13,7 +13,7 @@ find_path(SDL2_INCLUDE_DIRS
       SDL2
 )
 
-find_library(SDL2_LIBRARIES
+find_library(SDL2_LIBRARY
    NAMES
       SDL2
    HINTS
@@ -23,7 +23,7 @@ find_library(SDL2_LIBRARIES
       lib64
 )
 
-find_library(SDL2_MAIN_LIBRARIES
+find_library(SDL2MAIN_LIBRARY
    NAMES
       SDL2main
    HINTS
@@ -37,17 +37,17 @@ include(FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(SDL2
    REQUIRED_VARS
-      SDL2_LIBRARIES
-      SDL2_INCLUDE_DIRS
+      SDL2_LIBRARY
+      SDL2_INCLUDE_DIR
 )
 
 set(SDL2_FOUND NO)
-set(SDL2_MAIN_FOUND NO)
+set(SDL2MAIN_FOUND NO)
 
-if(SDL2_LIBRARIES)
+if(SDL2_LIBRARY)
    set(SDL2_FOUND YES)
 endif()
 
-if(SDL2_MAIN_LIBRARIES)
-   set(SDL2_MAIN_FOUND YES)
+if(SDL2MAIN_LIBRARY)
+   set(SDL2MAIN_FOUND YES)
 endif()
