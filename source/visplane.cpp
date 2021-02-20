@@ -165,7 +165,6 @@ visplane_t *checkVisplane(visplane_t *check, int x1, int x2)
 
 
 renderspan_t span;
-rslopespan_t slopespan;
 
 
 sv_t sv;
@@ -182,6 +181,8 @@ void renderSlopedSpan(int x1, int x2, int y, visplane_t *plane)
    float base;
 
    vector3f s(x1 - view.xcenter, y - view.ycenter, view.xfoc);
+
+   rslopespan_t slopespan;
 
    // Premultiply the u and v values by the texture width
    slopespan.iufrac = vector3f::getDot(s, sv.a) * 64.0f;
@@ -226,7 +227,7 @@ void renderSlopedSpan(int x1, int x2, int y, visplane_t *plane)
    else
       slopespan.rstep = slopespan.gstep = slopespan.bstep = 0;
 
-   render->rslopespan();
+   render->rslopespan(slopespan);
 }
 
 

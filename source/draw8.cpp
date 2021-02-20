@@ -188,7 +188,8 @@ void drawSpanFog8(void)
 }
 
 
-void drawSlopedSpan8(void)
+// NOCHECKIN: Why is this just drawing using the regular span code?
+void drawSlopedSpan8(rslopespan_t slopespan)
 {
    unsigned xf = span.xfrac, xs = span.xstep;
    unsigned yf = span.yfrac, ys = span.ystep;
@@ -208,7 +209,8 @@ void drawSlopedSpan8(void)
    }
 }
 
-void drawSlopedSpanFog8(void)
+// NOCHECKIN: Why is this just drawing using the regular span code?
+void drawSlopedSpanFog8(rslopespan_t slopespan)
 {
    unsigned xf = span.xfrac, xs = span.xstep;
    unsigned yf = span.yfrac, ys = span.ystep;
@@ -232,6 +234,8 @@ void drawSlopedSpanFog8(void)
 void nop8(void)
 {}
 
+void slopeNop8(rslopespan_t) {}
+
 renderfunc_t render8 = {
 getFogColor8,
 calcLight8,
@@ -243,4 +247,4 @@ drawSlopedSpan8,
 drawSlopedSpanFog8,
 nop8,
 nop8,
-nop8};
+slopeNop8};

@@ -229,7 +229,7 @@ void drawSpanFog16(void)
 
 
 
-void drawSlopedSpan16(void)
+void drawSlopedSpan16(rslopespan_t slopespan)
 {
    float iu = slopespan.iufrac, iv = slopespan.ivfrac;
    float ius = slopespan.iustep, ivs = slopespan.ivstep;
@@ -357,7 +357,7 @@ void drawSlopedSpan16(void)
 #endif
 }
 
-void drawSlopedSpanFog16(void)
+void drawSlopedSpanFog16(rslopespan_t slopespan)
 {
    /*unsigned xf = span.xfrac, xs = span.xstep;
    unsigned yf = span.yfrac, ys = span.ystep;
@@ -382,8 +382,9 @@ void drawSlopedSpanFog16(void)
 }
 
 
-void nop16(void)
-{}
+void nop16(void) {}
+
+void nopSlope16(rslopespan_t) {}
 
 renderfunc_t render16 = {
 getFogColor16,
@@ -396,4 +397,4 @@ drawSlopedSpan16,
 drawSlopedSpanFog16,
 nop16,
 nop16,
-nop16};
+nopSlope16};

@@ -73,7 +73,6 @@ typedef struct rslopespan_s
 
 extern rendercolumn_t column;
 extern renderspan_t span;
-extern rslopespan_t slopespan;
 
 // -- bit-specific functions --
 typedef enum
@@ -94,12 +93,12 @@ typedef struct renderfunc_s
    void (*drawSpan)(void);
    void (*drawSpanFog)(void);
 
-   void (*drawSlopedSpan)(void);
-   void (*drawSlopedSpanFog)(void);
+   void (*drawSlopedSpan)(rslopespan_t);
+   void (*drawSlopedSpanFog)(rslopespan_t);
 
    void (*rcolumn)(void);
    void (*rspan)(void);
-   void (*rslopespan)(void);
+   void (*rslopespan)(rslopespan_t);
 } renderfunc_t;
 
 

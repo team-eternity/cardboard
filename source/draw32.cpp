@@ -33,7 +33,6 @@ Uint32 getFogColor32(Uint16 level, Uint8 r, Uint8 g, Uint8 b)
 }
 
 
-
 void calcLight32(float distance, float map, light_t *light, lighttype_e to)
 {
    float li, maxlight, dscale;
@@ -146,9 +145,11 @@ void drawColumn32(void)
 
    while(count--)
    {
-      *dest = (((source[(texy >> 16) & 0x3f] & 0xFF) * b)
-         | (((source[(texy >> 16) & 0x3f] & 0xFF00) * g) & 0xFF0000)
-         | ((source[(texy >> 16) & 0x3f] * r) & 0xFF000000)) >> 8;
+       Uint32 texl = source[(texy >> 16) & 0x3f];
+       
+       *dest = (((texl & 0xFF) * b)
+         | (((texl & 0xFF00) * g) & 0xFF0000)
+         | ((texl * r) & 0xFF000000)) >> 8;
 
       dest += sstep;
       texy += ystep;
@@ -173,9 +174,11 @@ void drawColumnFog32(void)
 
    while(count--)
    {
-      *dest = (((((source[(texy >> 16) & 0x3f] & 0xFF) * b)
-         | (((source[(texy >> 16) & 0x3f] & 0xFF00) * g) & 0xFF0000)
-         | ((source[(texy >> 16) & 0x3f] * r) & 0xFF000000))) >> 8) + fogadd;
+      Uint32 texl = source[(texy >> 16) & 0x3f];
+
+      *dest = (((((texl & 0xFF) * b)
+         | (((texl & 0xFF00) * g) & 0xFF0000)
+         | ((texl * r) & 0xFF000000))) >> 8) + fogadd;
 
       dest += sstep;
       texy += ystep;
@@ -200,9 +203,12 @@ void drawSpan32(void)
 
    while(count--)
    {
-      *dest = ((((source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)] & 0xFF) * b)
-         | (((source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)] & 0xFF00) * g) & 0xFF0000)
-         | ((source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)] * r) & 0xFF000000))) >> 8;
+      Uint32 texl = source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)];
+
+      *dest = ((((texl & 0xFF) * b)
+         | (((texl & 0xFF00) * g) & 0xFF0000)
+         | ((texl * r) & 0xFF000000))) >> 8;
+
       dest++;
       xf += xs;
       yf += ys;
@@ -225,9 +231,12 @@ void drawSpanFog32(void)
 
    while(count--)
    {
-      *dest = (((((source[((xf >> 10) & 0xFC0) + ((yf >> 16) & 63)] & 0xFF) * b)
-         | (((source[((xf >> 10) & 0xFC0) + ((yf >> 16) & 63)] & 0xFF00) * g) & 0xFF0000)
-         | ((source[((xf >> 10) & 0xFC0) + ((yf >> 16) & 63)] * r) & 0xFF000000))) >> 8) + fogadd;
+       Uint32 texl = source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)];
+
+       *dest = (((((texl & 0xFF) * b)
+         | (((texl & 0xFF00) * g) & 0xFF0000)
+         | ((texl * r) & 0xFF000000))) >> 8) + fogadd;
+
       dest++;
       xf += xs;
       yf += ys;
@@ -236,7 +245,7 @@ void drawSpanFog32(void)
 
 
 
-void drawSlopedSpan32(void)
+void drawSlopedSpan32(rslopespan_t slopespan)
 {
    float iu = slopespan.iufrac, iv = slopespan.ivfrac;
    float ius = slopespan.iustep, ivs = slopespan.ivstep;
@@ -364,7 +373,7 @@ void drawSlopedSpan32(void)
 #endif
 }
 
-void drawSlopedSpanFog32(void)
+void drawSlopedSpanFog32(rslopespan_t slopespan)
 {
    float iu = slopespan.iufrac, iv = slopespan.ivfrac;
    float ius = slopespan.iustep, ivs = slopespan.ivstep;
@@ -493,8 +502,9 @@ void drawSlopedSpanFog32(void)
 }
 
 
-void nop(void)
-{}
+void nop(void) {}
+
+void slopeNop(rslopespan_t) {}
 
 
 renderfunc_t render32 = {
@@ -508,4 +518,4 @@ drawSlopedSpan32,
 drawSlopedSpanFog32,
 nop,
 nop,
-nop};
+slopeNop};
