@@ -23,9 +23,13 @@
 #include "render.h"
 #include "mapdata.h"
 
+// TODO: Get rid of these
+void (*rcolumn)(void);
+void (*rspan)(void);
+void (*rslopespan)(rslopespan_t);
 
 
-Uint32 getFogColor32(Uint16 level, Uint8 r, Uint8 g, Uint8 b)
+Uint32 getFogColor(Uint16 level, Uint8 r, Uint8 g, Uint8 b)
 {
    return (((r * level) << 8) & 0xff0000) |
           ((g * level) & 0xff00) |
@@ -33,7 +37,7 @@ Uint32 getFogColor32(Uint16 level, Uint8 r, Uint8 g, Uint8 b)
 }
 
 
-void calcLight32(float distance, float map, light_t *light, lighttype_e to)
+void calcLight(float distance, float map, light_t *light, lighttype_e to)
 {
    float li, maxlight, dscale;
    Uint16 ulight, flight;
@@ -70,14 +74,14 @@ void calcLight32(float distance, float map, light_t *light, lighttype_e to)
 
       ulight = (Uint16)map;
 
-      span.fogadd = getFogColor32(flight, light->f_r, light->f_g, light->f_b);
+      span.fogadd = getFogColor(flight, light->f_r, light->f_g, light->f_b);
       span.l_r = (ulight * light->l_r) >> 8;
       span.l_g = (ulight * light->l_g) >> 8;
       span.l_b = (ulight * light->l_b) >> 8;
       span.rf = (map * light->l_r) / 256;
       span.gf = (map * light->l_g) / 256;
       span.bf = (map * light->l_b) / 256;
-      render->rslopespan = flight > 0 ? render->drawSlopedSpanFog : render->drawSlopedSpan;
+      rslopespan = flight > 0 ? drawSlopedSpanFog : drawSlopedSpan;
       return;
    }
 
@@ -109,28 +113,28 @@ void calcLight32(float distance, float map, light_t *light, lighttype_e to)
 
    if(to == LT_COLUMN)
    {
-      column.fogadd = getFogColor32(flight, light->f_r, light->f_g, light->f_b);
+      column.fogadd = getFogColor(flight, light->f_r, light->f_g, light->f_b);
 
       column.l_r = (ulight * light->l_r) >> 8;
       column.l_g = (ulight * light->l_g) >> 8;
       column.l_b = (ulight * light->l_b) >> 8;
 
-      render->rcolumn = flight > 0 ? render->drawColumnFog : render->drawColumn;
+      rcolumn = flight > 0 ? drawColumnFog : drawColumn;
    }
    else if(to == LT_SPAN)
    {
-      span.fogadd = getFogColor32(flight, light->f_r, light->f_g, light->f_b);
+      span.fogadd = getFogColor(flight, light->f_r, light->f_g, light->f_b);
       span.l_r = (ulight * light->l_r) >> 8;
       span.l_g = (ulight * light->l_g) >> 8;
       span.l_b = (ulight * light->l_b) >> 8;
 
-      render->rspan = flight > 0 ? render->drawSpanFog : render->drawSpan;
+      rspan = flight > 0 ? drawSpanFog : drawSpan;
    }
 }
 
 
 // -- Column drawers -- 
-void drawColumn32(void)
+void drawColumn(void)
 {
    Uint32 *source, *dest;
    int count;
@@ -158,7 +162,7 @@ void drawColumn32(void)
 
 
 
-void drawColumnFog32(void)
+void drawColumnFog(void)
 {
    Uint32 *source, *dest;
    int count;
@@ -188,7 +192,7 @@ void drawColumnFog32(void)
 
 
 // -- Span drawing --
-void drawSpan32(void)
+void drawSpan(void)
 {
    unsigned xf = span.xfrac, xs = span.xstep;
    unsigned yf = span.yfrac, ys = span.ystep;
@@ -215,7 +219,7 @@ void drawSpan32(void)
    }
 }
 
-void drawSpanFog32(void)
+void drawSpanFog(void)
 {
    unsigned xf = span.xfrac, xs = span.xstep;
    unsigned yf = span.yfrac, ys = span.ystep;
@@ -245,7 +249,7 @@ void drawSpanFog32(void)
 
 
 
-void drawSlopedSpan32(rslopespan_t slopespan)
+void drawSlopedSpan(rslopespan_t slopespan)
 {
    float iu = slopespan.iufrac, iv = slopespan.ivfrac;
    float ius = slopespan.iustep, ivs = slopespan.ivstep;
@@ -373,7 +377,7 @@ void drawSlopedSpan32(rslopespan_t slopespan)
 #endif
 }
 
-void drawSlopedSpanFog32(rslopespan_t slopespan)
+void drawSlopedSpanFog(rslopespan_t slopespan)
 {
    float iu = slopespan.iufrac, iv = slopespan.ivfrac;
    float ius = slopespan.iustep, ivs = slopespan.ivstep;
@@ -502,20 +506,3 @@ void drawSlopedSpanFog32(rslopespan_t slopespan)
 }
 
 
-void nop(void) {}
-
-void slopeNop(rslopespan_t) {}
-
-
-renderfunc_t render32 = {
-getFogColor32,
-calcLight32,
-drawColumn32,
-drawColumnFog32,
-drawSpan32,
-drawSpanFog32,
-drawSlopedSpan32,
-drawSlopedSpanFog32,
-nop,
-nop,
-slopeNop};

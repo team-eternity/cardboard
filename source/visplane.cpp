@@ -204,7 +204,7 @@ void renderSlopedSpan(int x1, int x2, int y, visplane_t *plane)
    base = 4*(plane->light.l_level) - 448;
    map = base - (NUMCOLORMAPS - (sv.shade - sv.plight * slopespan.idfrac));
 
-   render->calcLight(0.0f, map, &plane->light, LT_SLOPE);
+   calcLight(0.0f, map, &plane->light, LT_SLOPE);
    slopespan.rfrac = (int)(span.rf * 65536.0f);
    slopespan.gfrac = (int)(span.gf * 65536.0f);
    slopespan.bfrac = (int)(span.bf * 65536.0f);
@@ -215,7 +215,7 @@ void renderSlopedSpan(int x1, int x2, int y, visplane_t *plane)
 
       map = base - (NUMCOLORMAPS - (sv.shade - sv.plight * id));
 
-      render->calcLight(0.0f, map, &plane->light, LT_SLOPE);
+      calcLight(0.0f, map, &plane->light, LT_SLOPE);
       rdelta = (int)(span.rf * 65536.0f) - slopespan.rfrac;
       gdelta = (int)(span.gf * 65536.0f) - slopespan.gfrac;
       bdelta = (int)(span.bf * 65536.0f) - slopespan.bfrac;
@@ -227,7 +227,7 @@ void renderSlopedSpan(int x1, int x2, int y, visplane_t *plane)
    else
       slopespan.rstep = slopespan.gstep = slopespan.bstep = 0;
 
-   render->rslopespan(slopespan);
+   rslopespan(slopespan);
 }
 
 
@@ -270,7 +270,7 @@ void renderSpan(int x1, int x2, int y, visplane_t *plane)
    xstep = view.cos * iscale;
    ystep = -view.sin * iscale;
 
-   render->calcLight(1.0f / realy, 0, &plane->light, LT_SPAN);
+   calcLight(1.0f / realy, 0, &plane->light, LT_SPAN);
 
    // the texture coordinates are first calculated at the center of the screen and
    // then offsetted using the step values to x1.
@@ -285,8 +285,7 @@ void renderSpan(int x1, int x2, int y, visplane_t *plane)
    span.tex = texture->getBuffer();
    span.screen = screen->getBuffer();
 
-
-   render->rspan();
+   rspan();
 }
 
 

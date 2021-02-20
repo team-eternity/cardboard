@@ -38,7 +38,7 @@ viewport_t view;
 
 // -- Rendering -- 
 // set of functions for bit-specific rendering operations
-renderfunc_t *render;
+// renderfunc_t *render;
 
 // Screen buffer pointer
 vidDriver *texture = NULL;
@@ -132,16 +132,13 @@ void setupFrame(void)
       clipbot[i] = view.height - 1;
    }
 
-   switch(screen->getFormat().BytesPerPixel)
+   auto bytesPerPixel = screen->getFormat().BytesPerPixel;
+   switch(bytesPerPixel)
    {
-      case 1:
-         render = &render8;
-         break;
-      case 2:
-         render = &render16;
-         break;
       case 4:
-         render = &render32;
+         break;
+      default:
+         fatalError::Throw("%i bytes per pixel is unsupported. Currently only 32-bit color is supported.", bytesPerPixel);
          break;
    }
 
@@ -271,7 +268,7 @@ void renderWall1s(void)
          column.texx = ((int)((wall.len * xscale) + wall.xoffset) & 0x3f) * 64;
          column.x = i;
 
-         render->calcLight(wall.dist, 0, &wall.sector->light, LT_COLUMN);         
+         calcLight(wall.dist, 0, &wall.sector->light, LT_COLUMN);         
 
          column.y1 = t;
          column.y2 = b;
@@ -279,7 +276,7 @@ void renderWall1s(void)
          if(t <= b)
          {
             column.yfrac = (int)((((column.y1 - wall.tpeg + 1) * yscale) + wall.yoffset) * 65536.0);
-            render->rcolumn();
+            rcolumn();
          }
       }
 
@@ -347,7 +344,7 @@ void renderWall2s(void)
          column.texx = ((int)((wall.len * xscale) + wall.xoffset) & 0x3f) * 64;
          column.x = i;
 
-         render->calcLight(wall.dist, 0, &wall.sector->light, LT_COLUMN);         
+         calcLight(wall.dist, 0, &wall.sector->light, LT_COLUMN);         
       }
 
       if(wall.upper)
@@ -360,7 +357,7 @@ void renderWall2s(void)
          if(t <= h)
          {
             column.yfrac = (int)((((column.y1 - wall.tpeg + 1) * yscale) + wall.yoffset) * 65536.0);
-            render->rcolumn();
+            rcolumn();
             cliptop[i] = h;
          }
          else
@@ -379,7 +376,7 @@ void renderWall2s(void)
          if(l <= b)
          {
             column.yfrac = (int)((((column.y1 - wall.lpeg + 1) * yscale) + wall.yoffset) * 65536.0);
-            render->rcolumn();
+            rcolumn();
             clipbot[i] = l;
          }
          else

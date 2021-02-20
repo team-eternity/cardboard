@@ -82,32 +82,19 @@ typedef enum
    LT_SLOPE,
 } lighttype_e;
 
-typedef struct renderfunc_s
-{
-   Uint32 (*getFogColor)(Uint16, Uint8, Uint8, Uint8);
-   void (*calcLight)(float, float, light_t *, lighttype_e);
+// TODO: Get rid of these
+extern void (*rcolumn)(void);
+extern void (*rspan)(void);
+extern void (*rslopespan)(rslopespan_t);
 
-   void (*drawColumn)(void);
-   void (*drawColumnFog)(void);
-
-   void (*drawSpan)(void);
-   void (*drawSpanFog)(void);
-
-   void (*drawSlopedSpan)(rslopespan_t);
-   void (*drawSlopedSpanFog)(rslopespan_t);
-
-   void (*rcolumn)(void);
-   void (*rspan)(void);
-   void (*rslopespan)(rslopespan_t);
-} renderfunc_t;
-
-
-extern renderfunc_t *render;
-extern renderfunc_t render8;
-extern renderfunc_t render16;
-extern renderfunc_t render32;
-
-
+Uint32 getFogColor(Uint16 level, Uint8 r, Uint8 g, Uint8 b);
+void calcLight(float distance, float map, light_t* light, lighttype_e to);
+void drawColumn(void);
+void drawColumnFog(void);
+void drawSpan(void);
+void drawSpanFog(void);
+void drawSlopedSpan(rslopespan_t slopespan);
+void drawSlopedSpanFog(rslopespan_t slopespan);
 
 // -- Camera --
 typedef struct
@@ -131,11 +118,6 @@ typedef struct
 
 extern viewport_t view;
 
-
-// set of functions for bit-specific rendering operations
-extern renderfunc_t *render;
-
-
 // Screen buffer pointer
 extern   vidDriver *screen;
 extern   vidDriver *texture;
@@ -143,8 +125,6 @@ extern   vidDriver *texture;
 // Much like in doom. The screen clipping array starts out open and closes up as walls
 // are rendered.
 extern float    cliptop[MAX_WIDTH], clipbot[MAX_WIDTH];
-
-
 
 float safeCos(float ang);
 void wrapAngle(float *ang);
@@ -155,7 +135,5 @@ void flyCamera(float delta);
 void renderScene(void);
 void loadTextures(void);
 void initRenderer(void);
-
-
 
 #endif
