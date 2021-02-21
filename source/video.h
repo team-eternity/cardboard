@@ -18,8 +18,7 @@
 // Authors: Stephen McGranahan
 //
 
-#ifndef VIDEO_H
-#define VIDEO_H
+#pragma once
 
 #include "rect.h"
 #include <string>
@@ -208,8 +207,3 @@ class vidDriver
 
    static vidDriver  *screensurface;
 };
-
-
-
-
-#endif

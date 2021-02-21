@@ -18,8 +18,7 @@
 // Authors: Stephen McGranahan
 //
 
-#ifndef MAPDATA_H
-#define MAPDATA_H
+#pragma once
 
 #include "light.h"
 
@@ -129,4 +128,3 @@ float zPositionAt(pslope_t *slope, float x, float y);
 void nextFrameID(void);
 void hackMapData(void);
 
-#endif //MAPDATA_H

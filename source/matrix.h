@@ -18,8 +18,7 @@
 // Authors: Stephen McGranahan
 //
 
-#ifndef MATRIX_H
-#define MATRIX_H
+#pragma once
 
 #include "vectors.h"
 
@@ -143,4 +142,3 @@ class matrix3d
    float mat[16];
 };
 
-#endif

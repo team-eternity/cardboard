@@ -18,8 +18,7 @@
 // Authors: Stephen McGranahan
 //
 
-#ifndef RENDER_H
-#define RENDER_H
+#pragma once
 
 #include "light.h"
 #include "matrix.h"
@@ -127,5 +126,3 @@ void flyCamera(float delta);
 void renderScene(void);
 void loadTextures(void);
 void initRenderer(void);
-
-#endif

@@ -18,8 +18,7 @@
 // Authors: Stephen McGranahan
 //
 
-#ifndef VECTOR_H
-#define VECTOR_H
+#pragma once
 
 #include <math.h>
 
@@ -159,4 +158,3 @@ class point3f
 
    float x, y, z;
 };
-#endif

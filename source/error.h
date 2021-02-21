@@ -18,8 +18,7 @@
 // Authors: Stephen McGranahan
 //
 
-#ifndef GERROR_H
-#define GERROR_H
+#pragma once
 
 #include <string>
 #include <fstream>
@@ -76,5 +75,3 @@ class logStream
    static bool    printlogs;
 };
 
-
-#endif

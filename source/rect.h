@@ -18,8 +18,7 @@
 // Authors: Stephen McGranahan
 //
 
-#ifndef RECT_H
-#define RECT_H
+#pragma once
 
 // vidRect -----------------------------------------------------------------------------------
 // Represents a rectangular section of 2d space. Automatically calculates and translates 
@@ -88,6 +87,3 @@ class vidRect
    int rect_x, rect_y, rect_x2, rect_y2;
    unsigned int rect_w, rect_h;
 };
-
-
-#endif

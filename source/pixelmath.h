@@ -18,8 +18,7 @@
 // Authors: Stephen McGranahan
 //
 
-#ifndef PIXELMATH_H
-#define PIXELMATH_H
+#pragma once
 
 #define PIXELMATH_MACRO
 #ifdef PIXELMATH_MACRO
@@ -372,7 +371,5 @@ void MULPX16i(Uint16 &d, Uint16 &v);
 void TRANPX32i(Uint32 &p1, Uint32 &p2, unsigned char &amount);
 void TRANPX24i(Uint32 &p1, Uint32 &p2, unsigned char &amount);
 void TRANPX16i(Uint16 &p1, Uint16 &p2, unsigned char &amount);
-
-#endif
 
 #endif

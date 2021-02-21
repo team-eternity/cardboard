@@ -18,8 +18,7 @@
 // Authors: Stephen McGranahan
 //
 
-#ifndef LIGHTS_H
-#define LIGHTS_H
+#pragma once
 
 
 // -- Fog and Light -- 
@@ -48,4 +47,3 @@ typedef struct light_s
    Uint8 f_r, f_g, f_b;
 } light_t;
 
-#endif
