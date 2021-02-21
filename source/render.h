@@ -28,19 +28,19 @@
 #define MAX_HEIGHT 1024
 
 // -- Rendering --
-typedef struct
+struct lightblend_t
 {
 	Uint16 l_r, l_g, l_b;
 	Uint32 fogadd;
-} lightblend_t;
+};
 
-typedef struct
+struct slopelightblend_t
 {
 	float rf, gf, bf;
 	Uint32 fogadd;
-} slopelightblend_t;
+};
 
-typedef struct rendercolumn_s
+struct rendercolumn_t
 {
    int x;
    int y1, y2;
@@ -50,10 +50,10 @@ typedef struct rendercolumn_s
    lightblend_t blend;
 
    void *tex, *screen;
-} rendercolumn_t;
+};
 
 
-typedef struct renderspan_s
+struct renderspan_t
 {
    int x1, x2, y;
    int xfrac, yfrac, xstep, ystep;
@@ -61,10 +61,10 @@ typedef struct renderspan_s
    lightblend_t blend;
 
    void *tex, *screen;
-} renderspan_t;
+};
 
 
-typedef struct rslopespan_s
+struct rslopespan_t
 {
    int x1, x2, y;
    float iufrac, ivfrac, idfrac;
@@ -76,7 +76,7 @@ typedef struct rslopespan_s
    slopelightblend_t blend;
 
    void *src, *dest;
-} rslopespan_t;
+};
 
 
 // -- bit-specific functions --
@@ -88,24 +88,24 @@ void drawSpan(renderspan_t span);
 void drawSlopedSpan(rslopespan_t slopespan);
 
 // -- Camera --
-typedef struct
+struct camera_t
 {
    // rotmat is a matrix which is used to perform rotation operations on vertices
    matrix2d  rotmat;
    float     angle;
    float     x, y, z;
-} camera_t;
+};
 
 extern camera_t camera;
 
 
-typedef struct
+struct viewport_t
 {
    float xcenter, ycenter, xfoc, yfoc, focratio, fov;
    float sin, cos, tan;
    float leftangle, anglestep;
    int   width, height;
-} viewport_t;
+};
 
 extern viewport_t view;
 

@@ -23,47 +23,47 @@
 #include "light.h"
 
 // ----- Map data -----
-typedef unsigned int frameid_t;
+using frameid_t = unsigned int;
 extern frameid_t frameid;
 
-typedef struct mapsector_s mapsector_t;
+struct mapsector_t;
 
 // -- Map vertex --
 // The map vertices store the x and y (which translates to horizontal and distance in 3D)
 // as a speed booster, the projected x and distance are stored in each vertex from the frame currently being rendered
 // so each vertex only has to be projected once, except in cases where the vertex is clipped to the view plane, in which case
 // the projection values will not be stored.
-typedef struct
+struct mapvertex_t
 {
    float x, y;
 
    frameid_t   frameid;
    float proj_x, distance, idistance;
    float t_x, t_y;
-} mapvertex_t;
+};
 
 
 
 // -- Map lineside --
-typedef struct
+struct mapside_t
 {
    float xoffset, yoffset;
    float xscale, yscale;
 
    mapsector_t *sector;
-} mapside_t;
+};
 
 
 
 // -- Map line --
-typedef struct
+struct mapline_t
 {
    mapvertex_t    *v1, *v2;
    float          length;
 
    mapside_t      *side[2];
    mapsector_t    *sector1, *sector2;
-} mapline_t;
+};
 
 
 
@@ -72,7 +72,7 @@ typedef struct
 // A planeslope equasion consists of a 2d vertex, 2d directional vector, and a 
 // unit slope  (that is, z delta per map unit traveled along the directional 
 // vector in 2d space), 
-typedef struct pslope_s
+struct pslope_t
 {
    float xori, yori, zori;
 
@@ -85,11 +85,11 @@ typedef struct pslope_s
    float px, py, pz;
 
    bool  isceiling;
-} pslope_t;
+};
 
 
 // For my purposes now I'm going to assume that all sectors are closed and convex.
-struct mapsector_s
+struct mapsector_t
 {
    float floorz, ceilingz;
    float f_xoff, f_yoff;

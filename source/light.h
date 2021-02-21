@@ -23,7 +23,7 @@
 
 // -- Fog and Light -- 
 // These are stored in a single struct for easier handling.
-typedef struct light_s
+struct light_t
 {
    // -- Light --
    // The color multipliers work on fixed point scheme of sorts. The multipliers
@@ -45,5 +45,5 @@ typedef struct light_s
    // thus facilitating the fade to a color.
    float f_start, f_stop;
    Uint8 f_r, f_g, f_b;
-} light_t;
+};
 
