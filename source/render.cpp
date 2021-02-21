@@ -177,11 +177,6 @@ void flyCamera(float delta)
 }
 
 
-
-
-rendercolumn_t column;
-
-
 struct
 {
    int   x1, x2;
@@ -215,6 +210,8 @@ void renderWall1s(void)
    float basescale, yscale, xscale;
    int t, b;
    int ctop, cbot;
+
+   rendercolumn_t column;
 
    column.screen = (void *)screen->getBuffer();
    column.tex = (void *)texture->getBuffer();
@@ -276,7 +273,7 @@ void renderWall1s(void)
          if(t <= b)
          {
             column.yfrac = (int)((((column.y1 - wall.tpeg + 1) * yscale) + wall.yoffset) * 65536.0);
-            drawColumn();
+            drawColumn(column);
          }
       }
 
@@ -297,6 +294,7 @@ void renderWall2s(void)
    int h, l, t, b, m;
    int ctop, cbot;
 
+   rendercolumn_t column;
    column.screen = (void *)screen->getBuffer();
    column.tex = (void *)texture->getBuffer();
 
@@ -357,7 +355,7 @@ void renderWall2s(void)
          if(t <= h)
          {
             column.yfrac = (int)((((column.y1 - wall.tpeg + 1) * yscale) + wall.yoffset) * 65536.0);
-            drawColumn();
+            drawColumn(column);
             cliptop[i] = h;
          }
          else
@@ -376,7 +374,7 @@ void renderWall2s(void)
          if(l <= b)
          {
             column.yfrac = (int)((((column.y1 - wall.lpeg + 1) * yscale) + wall.yoffset) * 65536.0);
-            drawColumn();
+            drawColumn(column);
             clipbot[i] = l;
          }
          else

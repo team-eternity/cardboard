@@ -135,7 +135,7 @@ slopelightblend_t calcSlopeLight(float distance, float map, light_t light)
 }
 
 // -- Column drawers -- 
-void drawColumn(void)
+void drawColumn(rendercolumn_t column)
 {
    Uint32 *source, *dest;
    int count;
