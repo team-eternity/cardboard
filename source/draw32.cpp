@@ -130,6 +130,7 @@ void drawColumn(void)
    int count;
    unsigned sstep = view.width, ystep = column.ystep, texy = column.yfrac;
    Uint16 r = column.l_r, g = column.l_g, b = column.l_b;
+   Uint32 fogadd = column.fogadd;
 
    if((count = column.y2 - column.y1 + 1) < 0)
       return;
@@ -143,73 +144,16 @@ void drawColumn(void)
        
        *dest = (((texl & 0xFF) * b)
          | (((texl & 0xFF00) * g) & 0xFF0000)
-         | ((texl * r) & 0xFF000000)) >> 8;
+         | ((texl * r) & 0xFF000000)) >> 8 + fogadd;
 
       dest += sstep;
       texy += ystep;
    }
 }
-
-
-
-void drawColumnFog(void)
-{
-   Uint32 *source, *dest;
-   int count;
-   unsigned sstep = view.width, ystep = column.ystep, texy = column.yfrac;
-   Uint16 r = column.l_r, g = column.l_g, b = column.l_b;
-   Uint32 fogadd = column.fogadd;
-
-   if((count = column.y2 - column.y1 + 1) < 0)
-      return;
-
-   source = ((Uint32 *)column.tex) + column.texx;
-   dest = ((Uint32 *)column.screen) + (column.y1 * sstep) + column.x;
-
-   while(count--)
-   {
-      Uint32 texl = source[(texy >> 16) & 0x3f];
-
-      *dest = (((((texl & 0xFF) * b)
-         | (((texl & 0xFF00) * g) & 0xFF0000)
-         | ((texl * r) & 0xFF000000))) >> 8) + fogadd;
-
-      dest += sstep;
-      texy += ystep;
-   }
-}
-
 
 
 // -- Span drawing --
 void drawSpan(void)
-{
-   unsigned xf = span.xfrac, xs = span.xstep;
-   unsigned yf = span.yfrac, ys = span.ystep;
-   int count;
-   Uint16 r = span.l_r, g = span.l_g, b = span.l_b;
-   
-   if((count = span.x2 - span.x1 + 1) < 0)
-      return;
-
-   Uint32 *source = (Uint32 *)span.tex;
-   Uint32 *dest = (Uint32 *)span.screen + (span.y * view.width) + span.x1;
-
-   while(count--)
-   {
-      Uint32 texl = source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)];
-
-      *dest = ((((texl & 0xFF) * b)
-         | (((texl & 0xFF00) * g) & 0xFF0000)
-         | ((texl * r) & 0xFF000000))) >> 8;
-
-      dest++;
-      xf += xs;
-      yf += ys;
-   }
-}
-
-void drawSpanFog(void)
 {
    unsigned xf = span.xfrac, xs = span.xstep;
    unsigned yf = span.yfrac, ys = span.ystep;
@@ -225,19 +169,17 @@ void drawSpanFog(void)
 
    while(count--)
    {
-       Uint32 texl = source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)];
+      Uint32 texl = source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)];
 
-       *dest = (((((texl & 0xFF) * b)
+      *dest = ((((texl & 0xFF) * b)
          | (((texl & 0xFF00) * g) & 0xFF0000)
-         | ((texl * r) & 0xFF000000))) >> 8) + fogadd;
+         | ((texl * r) & 0xFF000000))) >> 8 + fogadd;
 
       dest++;
       xf += xs;
       yf += ys;
    }
 }
-
-
 
 void drawSlopedSpan(rslopespan_t slopespan)
 {
@@ -366,133 +308,3 @@ void drawSlopedSpan(rslopespan_t slopespan)
    }
 #endif
 }
-
-void drawSlopedSpanFog(rslopespan_t slopespan)
-{
-   float iu = slopespan.iufrac, iv = slopespan.ivfrac;
-   float ius = slopespan.iustep, ivs = slopespan.ivstep;
-   float id = slopespan.idfrac, ids = slopespan.idstep;
-
-   int r, rs, g, gs, b, bs;
-
-   int count;
-
-   if((count = slopespan.x2 - slopespan.x1 + 1) < 0)
-      return;
-
-   r = slopespan.rfrac; rs = slopespan.rstep;
-   g = slopespan.gfrac; gs = slopespan.gstep;
-   b = slopespan.bfrac; bs = slopespan.bstep;
-
-   Uint32 *src = (Uint32 *)slopespan.src;
-   Uint32 *dest = (Uint32 *)slopespan.dest + (slopespan.y * view.width) + slopespan.x1;
-
-#if 0
-   // Perfect *slow* render
-   while(count--)
-   {
-      float mul = 1.0f / id;
-
-      int u = (int)(64.0f * iu * mul);
-      int v = (int)(64.0f * iv * mul);
-      unsigned texl = (v & 63) * 64 + (u & 63);
-
-      *dest = ((((src[texl] & 0xFF) * (b >> 16))
-         | (((src[texl] & 0xFF00) * (g >> 16)) & 0xFF0000)
-         | ((src[texl] * (r >> 16)) & 0xFF000000))) >> 8;
-      dest++;
-
-      iu += ius;
-      iv += ivs;
-      id += ids;
-      r += rs;
-      g += gs;
-      b += bs;
-   }
-#else
-   #define SPANJUMP 16
-   #define INTERPSTEP (1.0f / 16.0f)
-   while(count >= SPANJUMP)
-   {
-      float ustart, uend;
-      float vstart, vend;
-      float mulstart, mulend;
-      int ustep, vstep;
-      int incount, ufrac, vfrac;
-
-      mulstart = 65536.0f / id;
-      id += ids * SPANJUMP;
-      mulend = 65536.0f / id;
-
-      ufrac = (int)(ustart = iu * mulstart);
-      vfrac = (int)(vstart = iv * mulstart);
-      iu += ius * SPANJUMP;
-      iv += ivs * SPANJUMP;
-      uend = iu * mulend;
-      vend = iv * mulend;
-
-      ustep = (int)((uend - ustart) * INTERPSTEP);
-      vstep = (int)((vend - vstart) * INTERPSTEP);
-
-      incount = SPANJUMP;
-      while(incount--)
-      {
-         Uint32 texl = src[((vfrac >> 10) & 0xFC0) + ((ufrac >> 16) & 0x3F)];
-
-         *dest = ((((texl & 0xFF) * (b >> 16))
-            | (((texl & 0xFF00) * (g >> 16)) & 0xFF0000)
-            | ((texl * (r >> 16)) & 0xFF000000))) >> 8;
-         dest++;
-
-         ufrac += ustep;
-         vfrac += vstep;
-         r += rs;
-         g += gs;
-         b += bs;
-      }
-
-      count -= SPANJUMP;
-   }
-   if(count > 0)
-   {
-      float ustart, uend;
-      float vstart, vend;
-      float mulstart, mulend;
-      int ustep, vstep;
-      int incount, ufrac, vfrac;
-
-      mulstart = 65536.0f / id;
-      id += ids * count;
-      mulend = 65536.0f / id;
-
-      ufrac = (int)(ustart = iu * mulstart);
-      vfrac = (int)(vstart = iv * mulstart);
-      iu += ius * count;
-      iv += ivs * count;
-      uend = iu * mulend;
-      vend = iv * mulend;
-
-      ustep = (int)((uend - ustart) / count);
-      vstep = (int)((vend - vstart) / count);
-
-      incount = count;
-      while(incount--)
-      {
-         Uint32 texl = src[((vfrac >> 10) & 0xFC0) + ((ufrac >> 16) & 0x3F)];
-
-         *dest = ((((texl & 0xFF) * (g >> 16))
-            | (((texl & 0xFF00) * (b >> 16)) & 0xFF0000)
-            | ((texl * (r >> 16)) & 0xFF000000))) >> 8;
-         dest++;
-
-         ufrac += ustep;
-         vfrac += vstep;
-         r += rs;
-         g += gs;
-         b += bs;
-      }
-   }
-#endif
-}
-
-

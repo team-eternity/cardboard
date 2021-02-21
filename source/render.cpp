@@ -276,14 +276,7 @@ void renderWall1s(void)
          if(t <= b)
          {
             column.yfrac = (int)((((column.y1 - wall.tpeg + 1) * yscale) + wall.yoffset) * 65536.0);
-            if (column.fogadd > 0)
-            {
-                drawColumnFog();
-            }
-            else
-            {
-                drawColumn();
-            }
+            drawColumn();
          }
       }
 
@@ -364,14 +357,7 @@ void renderWall2s(void)
          if(t <= h)
          {
             column.yfrac = (int)((((column.y1 - wall.tpeg + 1) * yscale) + wall.yoffset) * 65536.0);
-            if (column.fogadd > 0)
-            {
-                drawColumnFog();
-            }
-            else
-            {
-                drawColumn();
-            }
+            drawColumn();
             cliptop[i] = h;
          }
          else
@@ -390,14 +376,7 @@ void renderWall2s(void)
          if(l <= b)
          {
             column.yfrac = (int)((((column.y1 - wall.lpeg + 1) * yscale) + wall.yoffset) * 65536.0);
-            if (column.fogadd > 0)
-            {
-                drawColumnFog();
-            }
-            else
-            {
-                drawColumn();
-            }
+            drawColumn();
             clipbot[i] = l;
          }
          else

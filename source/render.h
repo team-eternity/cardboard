@@ -85,11 +85,8 @@ typedef enum
 Uint32 getFogColor(Uint16 level, Uint8 r, Uint8 g, Uint8 b);
 void calcLight(float distance, float map, light_t* light, lighttype_e to);
 void drawColumn(void);
-void drawColumnFog(void);
 void drawSpan(void);
-void drawSpanFog(void);
 void drawSlopedSpan(rslopespan_t slopespan);
-void drawSlopedSpanFog(rslopespan_t slopespan);
 
 // -- Camera --
 typedef struct

@@ -227,14 +227,7 @@ void renderSlopedSpan(int x1, int x2, int y, visplane_t *plane)
    else
       slopespan.rstep = slopespan.gstep = slopespan.bstep = 0;
 
-   if (span.fogadd > 0)
-   {
-       drawSlopedSpanFog(slopespan);
-   }
-   else
-   {
-       drawSlopedSpan(slopespan);
-   }
+   drawSlopedSpan(slopespan);
 }
 
 
@@ -292,14 +285,7 @@ void renderSpan(int x1, int x2, int y, visplane_t *plane)
    span.tex = texture->getBuffer();
    span.screen = screen->getBuffer();
 
-   if (span.fogadd > 0)
-   {
-       drawSpanFog();
-   }
-   else
-   {
-       drawSpan();
-   }
+   drawSpan();
 }
 
 
