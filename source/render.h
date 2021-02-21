@@ -82,11 +82,6 @@ typedef enum
    LT_SLOPE,
 } lighttype_e;
 
-// TODO: Get rid of these
-extern void (*rcolumn)(void);
-extern void (*rspan)(void);
-extern void (*rslopespan)(rslopespan_t);
-
 Uint32 getFogColor(Uint16 level, Uint8 r, Uint8 g, Uint8 b);
 void calcLight(float distance, float map, light_t* light, lighttype_e to);
 void drawColumn(void);

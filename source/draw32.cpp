@@ -23,11 +23,6 @@
 #include "render.h"
 #include "mapdata.h"
 
-// TODO: Get rid of these
-void (*rcolumn)(void);
-void (*rspan)(void);
-void (*rslopespan)(rslopespan_t);
-
 
 Uint32 getFogColor(Uint16 level, Uint8 r, Uint8 g, Uint8 b)
 {
@@ -81,7 +76,6 @@ void calcLight(float distance, float map, light_t *light, lighttype_e to)
       span.rf = (map * light->l_r) / 256;
       span.gf = (map * light->l_g) / 256;
       span.bf = (map * light->l_b) / 256;
-      rslopespan = flight > 0 ? drawSlopedSpanFog : drawSlopedSpan;
       return;
    }
 
@@ -118,8 +112,6 @@ void calcLight(float distance, float map, light_t *light, lighttype_e to)
       column.l_r = (ulight * light->l_r) >> 8;
       column.l_g = (ulight * light->l_g) >> 8;
       column.l_b = (ulight * light->l_b) >> 8;
-
-      rcolumn = flight > 0 ? drawColumnFog : drawColumn;
    }
    else if(to == LT_SPAN)
    {
@@ -127,8 +119,6 @@ void calcLight(float distance, float map, light_t *light, lighttype_e to)
       span.l_r = (ulight * light->l_r) >> 8;
       span.l_g = (ulight * light->l_g) >> 8;
       span.l_b = (ulight * light->l_b) >> 8;
-
-      rspan = flight > 0 ? drawSpanFog : drawSpan;
    }
 }
 
