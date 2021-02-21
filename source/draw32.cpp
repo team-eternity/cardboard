@@ -31,97 +31,108 @@ Uint32 getFogColor(Uint16 level, Uint8 r, Uint8 g, Uint8 b)
           ((b * level) >> 8);
 }
 
-
-void calcLight(float distance, float map, light_t *light, lighttype_e to)
+lightblend_t calcLight(float distance, float map, light_t light)
 {
-   float li, maxlight, dscale;
-   Uint16 ulight, flight;
-   float fog;
+    lightblend_t result;
 
-   // Turns out the lighting in doom is a simple linear equation
-   // the minimum a light can scale on a wall is
-   // 2x - 224, the maximum is 2x - 40
-   // the amount added for scaling is distance * 2560 * 4
-   // this is added to the value for minimum light and that is then clipped to the 
-   // maximum light value and you have your result!
+    float li, maxlight, dscale;
+    Uint16 ulight, flight;
+    float fog;
 
-   maxlight = light->l_level * 2 - 40;
+    // Turns out the lighting in doom is a simple linear equation
+    // the minimum a light can scale on a wall is
+    // 2x - 224, the maximum is 2x - 40
+    // the amount added for scaling is distance * 2560 * 4
+    // this is added to the value for minimum light and that is then clipped to the 
+    // maximum light value and you have your result!
 
-   if(maxlight > 256) // clip max light
-      maxlight = 256;
+    maxlight = light.l_level * 2 - 40;
 
-   // calc the minimum light
-   li = light->l_level * 2 - 224;
+    if (maxlight > 256) // clip max light
+        maxlight = 256;
 
-   if(to == LT_SLOPE)
-   {
-      map = fabs(map);
+    // calc the minimum light
+    li = light.l_level * 2 - 224;
 
-      if(map < li)
-         map = li;
-      if(map > maxlight)
-         map = maxlight;
+    if (maxlight < 0)
+        ulight = 0;
+    else
+    {
+        // calc the added amount
+        dscale = (distance * 2560.0f * 4);
 
-      map = map < 0 ? 0 : map > 256 ? 256 : map;
+        // the increased light is added
+        li += dscale;
+        // and the result clipped
+        li = li > maxlight ? maxlight : li < 0 ? 0 : li;
 
-      // TODO: FOG
-      flight = 0;
+        // The scalars for cardboard are fixed point 1.6 numbers 
+        ulight = abs((int)li & 0x1FF);
+    }
 
-      ulight = (Uint16)map;
+    if (light.f_start)
+    {
+        fog = (distance - light.f_stop) / (light.f_start - light.f_stop);
+        flight = fog > 1.0f ? 256 : fog < 0 ? 0 : (Uint16)(fog * 256);
+        ulight = (int)(ulight * flight) >> 8;
+        flight = 256 - flight;
+    }
+    else
+        flight = 0;
 
-      span.fogadd = getFogColor(flight, light->f_r, light->f_g, light->f_b);
-      span.l_r = (ulight * light->l_r) >> 8;
-      span.l_g = (ulight * light->l_g) >> 8;
-      span.l_b = (ulight * light->l_b) >> 8;
-      span.rf = (map * light->l_r) / 256;
-      span.gf = (map * light->l_g) / 256;
-      span.bf = (map * light->l_b) / 256;
-      return;
-   }
+    result.fogadd = getFogColor(flight, light.f_r, light.f_g, light.f_b);
 
-   if(maxlight < 0)
-      ulight = 0;
-   else
-   {
-      // calc the added amount
-      dscale = (distance * 2560.0f * 4);
-      
-      // the increased light is added
-      li += dscale; 
-      // and the result clipped
-      li = li > maxlight ? maxlight : li < 0 ? 0 : li;
+    result.l_r = (ulight * light.l_r) >> 8;
+    result.l_g = (ulight * light.l_g) >> 8;
+    result.l_b = (ulight * light.l_b) >> 8;
 
-      // The scalars for cardboard are fixed point 1.6 numbers 
-      ulight = abs((int)li & 0x1FF);
-   }
-
-   if(light->f_start)
-   {
-      fog = (distance - light->f_stop) / (light->f_start - light->f_stop);
-      flight = fog > 1.0f ? 256 : fog < 0 ? 0 : (Uint16)(fog * 256);
-      ulight = (int)(ulight * flight) >> 8;
-      flight = 256 - flight;
-   }
-   else
-      flight = 0;
-
-   if(to == LT_COLUMN)
-   {
-      column.fogadd = getFogColor(flight, light->f_r, light->f_g, light->f_b);
-
-      column.l_r = (ulight * light->l_r) >> 8;
-      column.l_g = (ulight * light->l_g) >> 8;
-      column.l_b = (ulight * light->l_b) >> 8;
-   }
-   else if(to == LT_SPAN)
-   {
-      span.fogadd = getFogColor(flight, light->f_r, light->f_g, light->f_b);
-      span.l_r = (ulight * light->l_r) >> 8;
-      span.l_g = (ulight * light->l_g) >> 8;
-      span.l_b = (ulight * light->l_b) >> 8;
-   }
+    return result;
 }
 
+slopelightblend_t calcSlopeLight(float distance, float map, light_t light)
+{
+    slopelightblend_t result;
+
+    float li, maxlight, dscale;
+    Uint16 ulight, flight;
+    float fog;
+
+    // Turns out the lighting in doom is a simple linear equation
+    // the minimum a light can scale on a wall is
+    // 2x - 224, the maximum is 2x - 40
+    // the amount added for scaling is distance * 2560 * 4
+    // this is added to the value for minimum light and that is then clipped to the 
+    // maximum light value and you have your result!
+
+    maxlight = light.l_level * 2 - 40;
+
+    if (maxlight > 256) // clip max light
+        maxlight = 256;
+
+    // calc the minimum light
+    li = light.l_level * 2 - 224;
+
+    map = fabs(map);
+
+    if (map < li)
+        map = li;
+    if (map > maxlight)
+        map = maxlight;
+
+    map = map < 0 ? 0 : map > 256 ? 256 : map;
+
+    // TODO: FOG
+    flight = 0;
+
+    ulight = (Uint16)map;
+
+    result.fogadd = getFogColor(flight, light.f_r, light.f_g, light.f_b);
+    result.rf = (map * light.l_r) / 256;
+    result.gf = (map * light.l_g) / 256;
+    result.bf = (map * light.l_b) / 256;
+
+    return result;
+}
 
 // -- Column drawers -- 
 void drawColumn(void)
@@ -129,8 +140,8 @@ void drawColumn(void)
    Uint32 *source, *dest;
    int count;
    unsigned sstep = view.width, ystep = column.ystep, texy = column.yfrac;
-   Uint16 r = column.l_r, g = column.l_g, b = column.l_b;
-   Uint32 fogadd = column.fogadd;
+   Uint16 r = column.blend.l_r, g = column.blend.l_g, b = column.blend.l_b;
+   Uint32 fogadd = column.blend.fogadd;
 
    if((count = column.y2 - column.y1 + 1) < 0)
       return;
@@ -158,8 +169,8 @@ void drawSpan(void)
    unsigned xf = span.xfrac, xs = span.xstep;
    unsigned yf = span.yfrac, ys = span.ystep;
    int count;
-   Uint16 r = span.l_r, g = span.l_g, b = span.l_b;
-   Uint32 fogadd = span.fogadd;
+   Uint16 r = span.blend.l_r, g = span.blend.l_g, b = span.blend.l_b;
+   Uint32 fogadd = span.blend.fogadd;
    
    if((count = span.x2 - span.x1 + 1) < 0)
       return;

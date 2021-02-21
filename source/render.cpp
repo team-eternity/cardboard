@@ -268,7 +268,7 @@ void renderWall1s(void)
          column.texx = ((int)((wall.len * xscale) + wall.xoffset) & 0x3f) * 64;
          column.x = i;
 
-         calcLight(wall.dist, 0, &wall.sector->light, LT_COLUMN);         
+         column.blend = calcLight(wall.dist, 0, wall.sector->light);
 
          column.y1 = t;
          column.y2 = b;
@@ -344,7 +344,7 @@ void renderWall2s(void)
          column.texx = ((int)((wall.len * xscale) + wall.xoffset) & 0x3f) * 64;
          column.x = i;
 
-         calcLight(wall.dist, 0, &wall.sector->light, LT_COLUMN);         
+         column.blend = calcLight(wall.dist, 0, wall.sector->light);
       }
 
       if(wall.upper)

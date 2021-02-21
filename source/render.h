@@ -29,6 +29,18 @@
 #define MAX_HEIGHT 1024
 
 // -- Rendering --
+typedef struct
+{
+	Uint16 l_r, l_g, l_b;
+	Uint32 fogadd;
+} lightblend_t;
+
+typedef struct
+{
+	float rf, gf, bf;
+	Uint32 fogadd;
+} slopelightblend_t;
+
 typedef struct rendercolumn_s
 {
    int x;
@@ -36,12 +48,10 @@ typedef struct rendercolumn_s
    int yfrac, ystep;
    int texx;
 
-   Uint16  l_r, l_g, l_b;
-   Uint32  fogadd;
+   lightblend_t blend;
 
    void *tex, *screen;
 } rendercolumn_t;
-
 
 
 typedef struct renderspan_s
@@ -49,10 +59,7 @@ typedef struct renderspan_s
    int x1, x2, y;
    int xfrac, yfrac, xstep, ystep;
 
-   Uint16 l_r, l_g, l_b;
-   Uint32 fogadd;
-
-   float rf, gf, bf;
+   lightblend_t blend;
 
    void *tex, *screen;
 } renderspan_t;
@@ -67,6 +74,8 @@ typedef struct rslopespan_s
    int rfrac, gfrac, bfrac;
    int rstep, gstep, bstep;
 
+   slopelightblend_t blend;
+
    void *src, *dest;
 } rslopespan_t;
 
@@ -75,15 +84,9 @@ extern rendercolumn_t column;
 extern renderspan_t span;
 
 // -- bit-specific functions --
-typedef enum
-{
-   LT_COLUMN,
-   LT_SPAN,
-   LT_SLOPE,
-} lighttype_e;
-
 Uint32 getFogColor(Uint16 level, Uint8 r, Uint8 g, Uint8 b);
-void calcLight(float distance, float map, light_t* light, lighttype_e to);
+slopelightblend_t calcSlopeLight(float distance, float map, light_t light);
+lightblend_t calcLight(float distance, float map, light_t light);
 void drawColumn(void);
 void drawSpan(void);
 void drawSlopedSpan(rslopespan_t slopespan);
