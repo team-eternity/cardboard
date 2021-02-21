@@ -896,12 +896,12 @@ void projectWall(mapline_t *line)
 
 
    if(wall.markfloor)
-      wall.floorp = checkVisplane(findVisplane(sector->floorz, &sector->light, sector->fslope), floorx1, floorx2);
+      wall.floorp = checkVisplane(findVisplane(sector->floorz, sector->light, sector->fslope), floorx1, floorx2);
    else
       wall.floorp = NULL;
 
    if(wall.markceiling)
-      wall.ceilingp = checkVisplane(findVisplane(sector->ceilingz, &sector->light, sector->cslope), floorx1, floorx2);
+      wall.ceilingp = checkVisplane(findVisplane(sector->ceilingz, sector->light, sector->cslope), floorx1, floorx2);
    else
       wall.ceilingp = NULL;
  

@@ -24,7 +24,7 @@
 
 struct visplane_t
 {
-   visplane_t *next, *child;
+	visplane_t *child;
 
    float z;
    light_t light;
@@ -52,7 +52,7 @@ struct sv_t
 
 extern sv_t sv;
 
-visplane_t *findVisplane(float z, light_t *light, pslope_t *slope);
+visplane_t *findVisplane(float z, light_t light, pslope_t *slope);
 visplane_t *checkVisplane(visplane_t *check, int x1, int x2);
 
 void renderVisplanes();

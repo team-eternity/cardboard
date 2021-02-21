@@ -21,6 +21,7 @@
 #include <SDL.h>
 #include <math.h>
 #include <limits.h>
+#include "error.h"
 #include "mapdata.h"
 #include "visplane.h"
 #include "video.h"
@@ -31,8 +32,10 @@
 
 
 // -- Flats --
-visplane_t *head = NULL;
-visplane_t *unused = NULL;
+// Could also use a bucket array, but this is good enough for now.
+const int maxVisplanes = 1024;
+visplane_t visplanes[maxVisplanes];
+int nextFreeVisplane = 0;
 
 
 void clearPlane(visplane_t *plane)
@@ -40,69 +43,48 @@ void clearPlane(visplane_t *plane)
    plane->x2 = -1;
    plane->x1 = MAX_WIDTH;
 
-   plane->next = plane->child = NULL;
+   plane->child = NULL;
 }
 
 
 
 void unlinkPlanes()
 {
-   visplane_t *rover, *next, *child, *cnext;
-
-   for(rover = head; rover; rover = next)
-   {
-      next = rover->next;
-
-      for(child = rover->child; child; child = cnext)
-      {
-         cnext = child->next;
-
-         child->next = unused;
-         unused = child;
-      }
-
-      rover->next = unused;
-      unused = rover;
-   }
-
-   head = NULL;
+   nextFreeVisplane = 0;
 }
 
 
-visplane_t *findVisplane(float z, light_t *light, pslope_t *slope)
+visplane_t *findVisplane(float z, light_t light, pslope_t *slope)
 {
-   visplane_t *rover, *ret;
-
-   for(rover = head; rover; rover = rover->next)
+   for(int i = 0; i < nextFreeVisplane; ++i)
    {
-      if(fabs(rover->z - z) < 0.00001f && !memcmp(light, &rover->light, sizeof(light_t)) && rover->slope == slope)
+      auto rover = visplanes + i;
+
+      if(fabs(rover->z - z) < 0.00001f && !memcmp(&light, &rover->light, sizeof(light_t)) && rover->slope == slope)
          return rover;
    }
 
-   if(!unused)
-      ret = (visplane_t *)malloc(sizeof(visplane_t));
-   else
+   if (nextFreeVisplane == maxVisplanes)
    {
-      ret = unused;
-      unused = unused->next;
+      fatalError::Throw("Ran out of free visplanes");
    }
 
-   clearPlane(ret);
+   visplane_t *result = visplanes + nextFreeVisplane;
+   nextFreeVisplane++;
 
-   memcpy(&ret->light, light, sizeof(light_t));
-   ret->z = z;
-   ret->slope = slope;
+   clearPlane(result);
 
-   ret->next = head;
-   head = ret;
+   memcpy(&result->light, &light, sizeof(light_t));
+   result->z = z;
+   result->slope = slope;
 
-   return ret;
+   return result;
 }
 
 
 visplane_t *checkVisplane(visplane_t *check, int x1, int x2)
 {
-   visplane_t *child, *ret;
+   visplane_t *ret;
    int openleft, openright;
 
    if(check->x1 > check->x2)
@@ -134,13 +116,13 @@ visplane_t *checkVisplane(visplane_t *check, int x1, int x2)
       if(check->child)
          return checkVisplane(check->child, x1, x2);
 
-      if(!unused)
-         child = (visplane_t *)malloc(sizeof(visplane_t));
-      else
+      if (nextFreeVisplane == maxVisplanes)
       {
-         child = unused;
-         unused = unused->next;
+         fatalError::Throw("Ran out of visplanes");
       }
+
+      visplane_t *child = visplanes + nextFreeVisplane;
+      nextFreeVisplane++;
 
       clearPlane(child);
 
@@ -433,6 +415,9 @@ void renderVisplanes()
 {
    visplane_t *rover;
 
-   for(rover = head; rover; rover = rover->next)
+   for (int i = 0; i < nextFreeVisplane; ++i)
+   {
+      rover = visplanes + i;
       renderVisplane(rover);
+   }
 }
