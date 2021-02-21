@@ -162,11 +162,6 @@ visplane_t *checkVisplane(visplane_t *check, int x1, int x2)
    return ret;
 }
 
-
-
-renderspan_t span;
-
-
 sv_t sv;
 
 #define DOOMFLATORI
@@ -237,7 +232,7 @@ void renderSlopedSpan(int x1, int x2, int y, visplane_t *plane)
 void renderSpan(int x1, int x2, int y, visplane_t *plane)
 {
    float iscale, dy, xstep, ystep, realy, height;
-
+   renderspan_t span;
 
    // offset the height based on the camera
    height = plane->z - camera.z;
@@ -285,7 +280,7 @@ void renderSpan(int x1, int x2, int y, visplane_t *plane)
    span.tex = texture->getBuffer();
    span.screen = screen->getBuffer();
 
-   drawSpan();
+   drawSpan(span);
 }
 
 

@@ -80,14 +80,12 @@ typedef struct rslopespan_s
 } rslopespan_t;
 
 
-extern renderspan_t span;
-
 // -- bit-specific functions --
 Uint32 getFogColor(Uint16 level, Uint8 r, Uint8 g, Uint8 b);
 slopelightblend_t calcSlopeLight(float distance, float map, light_t light);
 lightblend_t calcLight(float distance, float map, light_t light);
 void drawColumn(rendercolumn_t column);
-void drawSpan(void);
+void drawSpan(renderspan_t span);
 void drawSlopedSpan(rslopespan_t slopespan);
 
 // -- Camera --

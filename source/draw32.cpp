@@ -164,7 +164,7 @@ void drawColumn(rendercolumn_t column)
 
 
 // -- Span drawing --
-void drawSpan(void)
+void drawSpan(renderspan_t span)
 {
    unsigned xf = span.xfrac, xs = span.xstep;
    unsigned yf = span.yfrac, ys = span.ystep;
