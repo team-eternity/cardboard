@@ -307,6 +307,57 @@ void fillSpan(int x1, int x2, int y, Uint32 color)
    }
 }
 
+void afineTextureSpan(int x1, int x2, int y, wall_t wall)
+{
+   Uint32* source = (Uint32*)texture->getBuffer();
+   Uint32* pixels = (Uint32*)screen->getBuffer() + (y * view.width) + x1;
+   int count = x2 - x1 + 1;
+
+   float distleft = wall.dist + (wall.diststep * (x1 - wall.x1));
+   float distright = wall.dist + (wall.diststep * (x2 - wall.x1));
+
+   float basescaleleft = 1.0f / (distleft * view.yfoc);
+   float basescaleright = 1.0f / (distright * view.yfoc);
+
+   float yscaleleft = basescaleleft * wall.yscale;
+   float xscaleleft = basescaleleft * wall.xscale;
+
+   float yscaleright = basescaleright * wall.yscale;
+   float xscaleright = basescaleright * wall.xscale;
+
+
+   float lenleft = wall.len + (wall.lenstep * (x1 - wall.x1));
+   float tpegleft = wall.tpeg + (wall.tpegstep * (x1 - wall.x1));
+
+   float lenright = wall.len + (wall.lenstep * (x2 - wall.x1));
+   float tpegright = wall.tpeg + (wall.tpegstep * (x2 - wall.x1));
+
+   float xfrac = (lenleft * xscaleleft) + wall.xoffset;
+   float yfrac = ((y - tpegleft + 1) * yscaleleft) + wall.yoffset;
+   float xfracend = (lenright * yscaleright) + wall.xoffset;
+   float yfracend = ((y - tpegright + 1) * xscaleright) + wall.yoffset;
+
+   float xfracstep = (xfracend - xfrac) / (x2 - x1);
+   float yfracstep = (yfracend - yfrac) / (x2 - x1);
+
+
+   int _xfrac = (int)(xfrac * 65536.0f);
+   int _yfrac = (int)(yfrac * 65536.0f);
+   int _texxstep = (int)(xfracstep * 65536.0f);
+   int _texystep = (int)(yfracstep * 65536.0f);
+
+   while (count > 0)
+   {
+      int texel = (((_yfrac >> 16) & 0x3f) << 6) + ((_xfrac >> 16) & 0x3f);
+      *pixels = *(source + texel);
+      pixels++;
+      _xfrac += _texxstep;
+      _yfrac += _texystep;
+      count--;
+
+   }
+}
+
 void renderWall1s(wall_t wall)
 {
    float top, bottom;
@@ -383,11 +434,11 @@ void renderWall1s(wall_t wall)
 
       for (; t2 > t1 && t1 <= b1; t1++)
       {
-         fillSpan(wallstart[t1], x - 1, t1, 0xffffffff);
+         afineTextureSpan(wallstart[t1], x - 1, t1, wall);
       }
       for (; b2 < b1 && t1 <= b1; b1--)
       {
-         fillSpan(wallstart[b1], x - 1, b1, 0xffffffff);
+         afineTextureSpan(wallstart[b1], x - 1, b1, wall);
       }
 
       while (t2 < t1 && t2 <= b2)
@@ -407,11 +458,11 @@ void renderWall1s(wall_t wall)
 
    for (; t2 > t1 && t1 <= b1; t1++)
    {
-      fillSpan(wallstart[t1], x - 1, t1, 0xffffffff);
+      afineTextureSpan(wallstart[t1], x - 1, t1, wall);
    }
    for (; b2 < b1 && t1 <= b1; b1--)
    {
-      fillSpan(wallstart[b1], x - 1, b1, 0xffffffff);
+      afineTextureSpan(wallstart[b1], x - 1, b1, wall);
    }
 }
 #endif
