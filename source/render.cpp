@@ -293,70 +293,9 @@ int walltop[MAX_WIDTH];
 int wallbottom[MAX_WIDTH];
 int wallstart[MAX_HEIGHT];
 
-void fillSpan(int x1, int x2, int y, Uint32 color)
-{
-   Uint32 *buffer = (Uint32 *)screen->getBuffer();
-   Uint32 *pixels = buffer + (y * view.width) + x1;
-   int count = x2 - x1 + 1;
-
-   while (count > 0)
-   {
-      *pixels = color;
-      pixels++;
-      count--;
-   }
-}
-
-void afineTextureSpan(int x1, int x2, int y, wall_t wall)
-{
-   Uint32* source = (Uint32*)texture->getBuffer();
-   Uint32* pixels = (Uint32*)screen->getBuffer() + (y * view.width) + x1;
-   int count = x2 - x1 + 1;
-
-   float distleft = wall.dist + (wall.diststep * (x1 - wall.x1));
-   float distright = wall.dist + (wall.diststep * (x2 - wall.x1));
-
-   float basescaleleft = 1.0f / (distleft * view.yfoc);
-   float basescaleright = 1.0f / (distright * view.yfoc);
-
-   float yscaleleft = basescaleleft * wall.yscale;
-   float xscaleleft = basescaleleft * wall.xscale;
-
-   float yscaleright = basescaleright * wall.yscale;
-   float xscaleright = basescaleright * wall.xscale;
-
-
-   float lenleft = wall.len + (wall.lenstep * (x1 - wall.x1));
-   float tpegleft = wall.tpeg + (wall.tpegstep * (x1 - wall.x1));
-
-   float lenright = wall.len + (wall.lenstep * (x2 - wall.x1));
-   float tpegright = wall.tpeg + (wall.tpegstep * (x2 - wall.x1));
-
-   float xfrac = (lenleft * xscaleleft) + wall.xoffset;
-   float yfrac = ((y - tpegleft + 1) * yscaleleft) + wall.yoffset;
-   float xfracend = (lenright * yscaleright) + wall.xoffset;
-   float yfracend = ((y - tpegright + 1) * xscaleright) + wall.yoffset;
-
-   float xfracstep = (xfracend - xfrac) / (x2 - x1);
-   float yfracstep = (yfracend - yfrac) / (x2 - x1);
-
-
-   int _xfrac = (int)(xfrac * 65536.0f);
-   int _yfrac = (int)(yfrac * 65536.0f);
-   int _texxstep = (int)(xfracstep * 65536.0f);
-   int _texystep = (int)(yfracstep * 65536.0f);
-
-   while (count > 0)
-   {
-      int texel = (((_yfrac >> 16) & 0x3f) << 6) + ((_xfrac >> 16) & 0x3f);
-      *pixels = *(source + texel);
-      pixels++;
-      _xfrac += _texxstep;
-      _yfrac += _texystep;
-      count--;
-
-   }
-}
+int wallxcoordinate[MAX_WIDTH];
+float wallyscale[MAX_WIDTH];
+lightblend_t wallblend[MAX_WIDTH];
 
 void perfectTextureSpan(int x1, int x2, int y, wall_t wall)
 {
@@ -364,24 +303,23 @@ void perfectTextureSpan(int x1, int x2, int y, wall_t wall)
    Uint32* pixels = (Uint32*)screen->getBuffer() + (y * view.width) + x1;
    int count = x2 - x1 + 1;
 
-   float dist = wall.dist + (wall.diststep * (x1 - wall.x1));
-   float len = wall.len + (wall.lenstep * (x1 - wall.x1));
    float tpeg = wall.tpeg + (wall.tpegstep * (x1 - wall.x1));
 
-   for(int x = x1; x <= x2; ++x)
+   int x = x1;
+
+   for(; x <= x2; ++x)
    {
-      float basescale = 1.0f / (dist * view.yfoc);
-      float xscale = basescale * wall.xscale;
-      float yscale = basescale * wall.yscale;
-      float xfrac = (len * xscale) + wall.xoffset;
+      float yscale = wallyscale[x];
       float yfrac = ((y - tpeg + 1) * yscale) + wall.yoffset;
 
-      int texel = ((((int)yfrac) & 0x3f) << 6) + (((int)xfrac) & 0x3f);
-      *pixels = *(source + texel);
+      auto blend = wallblend[x];
+
+      Uint32 texel = *(source + ((((int)yfrac) & 0x3f) << 6) + wallxcoordinate[x]);
+      *pixels = (((texel & 0xFF) * blend.l_b)
+         | (((texel & 0xFF00) * blend.l_g) & 0xFF0000)
+         | ((texel * blend.l_r) & 0xFF000000)) >> 8;
       pixels++;
 
-      dist += wall.diststep;
-      len += wall.lenstep;
       tpeg += wall.tpegstep;
    }
 }
@@ -389,11 +327,16 @@ void perfectTextureSpan(int x1, int x2, int y, wall_t wall)
 void renderWall1s(wall_t wall)
 {
    float top, bottom;
+   float dist, len, tpeg;
+
    int miny = MAX_HEIGHT;
    int maxy = 0;
 
    top = wall.top;
    bottom = wall.bottom;
+   dist = wall.dist;
+   len = wall.len;
+   tpeg = wall.tpeg;
 
    // Iterate over the columns, generate silhouette
    for (int i = wall.x1; i <= wall.x2; i++)
@@ -436,8 +379,20 @@ void renderWall1s(wall_t wall)
          wallbottom[i] = ybot;
       }
 
+      float basescale = 1.0f / (dist * view.yfoc);
+      float xscale = basescale * wall.xscale;
+      float yscale = basescale * wall.yscale;
+      float xfrac = (len * xscale) + wall.xoffset;
+
+      wallxcoordinate[i] = ((int)xfrac) & 0x3f;
+      wallyscale[i] = yscale;
+      wallblend[i] = calcLight(dist, 0, wall.sector->light);
+
       top += wall.topstep;
       bottom += wall.bottomstep;
+      dist += wall.diststep;
+      len += wall.lenstep;
+      tpeg += wall.tpegstep;
    }
 
    // Iterate over the rows
