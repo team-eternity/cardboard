@@ -177,7 +177,7 @@ void flyCamera(float delta)
 }
 
 
-struct
+struct wall_t
 {
    int   x1, x2;
 
@@ -201,11 +201,11 @@ struct
 
    bool markfloor, markceiling;
    visplane_t *floorp, *ceilingp;
-} wall;
+};
 
 
 
-void renderWall1s(void)
+void renderWall1s(wall_t wall)
 {
    float basescale, yscale, xscale;
    int t, b;
@@ -288,7 +288,7 @@ void renderWall1s(void)
 }
 
 
-void renderWall2s(void)
+void renderWall2s(wall_t wall)
 {
    float basescale, yscale, xscale;
    int h, l, t, b, m;
@@ -603,6 +603,7 @@ void projectWall(mapline_t *line)
    else
       istep = 1.0f;
 
+   wall_t wall;
    wall.length = (t2 - t1).getLength();
 
    wall.dist = i1;
@@ -923,9 +924,9 @@ void projectWall(mapline_t *line)
    wall.yscale = side->yscale;
 
    if(!backsector)
-      renderWall1s();
+      renderWall1s(wall);
    else
-      renderWall2s();
+      renderWall2s(wall);
 }
 
 
