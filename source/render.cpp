@@ -358,6 +358,34 @@ void afineTextureSpan(int x1, int x2, int y, wall_t wall)
    }
 }
 
+void perfectTextureSpan(int x1, int x2, int y, wall_t wall)
+{
+   Uint32* source = (Uint32*)texture->getBuffer();
+   Uint32* pixels = (Uint32*)screen->getBuffer() + (y * view.width) + x1;
+   int count = x2 - x1 + 1;
+
+   float dist = wall.dist + (wall.diststep * (x1 - wall.x1));
+   float len = wall.len + (wall.lenstep * (x1 - wall.x1));
+   float tpeg = wall.tpeg + (wall.tpegstep * (x1 - wall.x1));
+
+   for(int x = x1; x <= x2; ++x)
+   {
+      float basescale = 1.0f / (dist * view.yfoc);
+      float xscale = basescale * wall.xscale;
+      float yscale = basescale * wall.yscale;
+      float xfrac = (len * xscale) + wall.xoffset;
+      float yfrac = ((y - tpeg + 1) * yscale) + wall.yoffset;
+
+      int texel = ((((int)yfrac) & 0x3f) << 6) + (((int)xfrac) & 0x3f);
+      *pixels = *(source + texel);
+      pixels++;
+
+      dist += wall.diststep;
+      len += wall.lenstep;
+      tpeg += wall.tpegstep;
+   }
+}
+
 void renderWall1s(wall_t wall)
 {
    float top, bottom;
@@ -434,11 +462,11 @@ void renderWall1s(wall_t wall)
 
       for (; t2 > t1 && t1 <= b1; t1++)
       {
-         afineTextureSpan(wallstart[t1], x - 1, t1, wall);
+         perfectTextureSpan(wallstart[t1], x - 1, t1, wall);
       }
       for (; b2 < b1 && t1 <= b1; b1--)
       {
-         afineTextureSpan(wallstart[b1], x - 1, b1, wall);
+         perfectTextureSpan(wallstart[b1], x - 1, b1, wall);
       }
 
       while (t2 < t1 && t2 <= b2)
@@ -458,11 +486,11 @@ void renderWall1s(wall_t wall)
 
    for (; t2 > t1 && t1 <= b1; t1++)
    {
-      afineTextureSpan(wallstart[t1], x - 1, t1, wall);
+      perfectTextureSpan(wallstart[t1], x - 1, t1, wall);
    }
    for (; b2 < b1 && t1 <= b1; b1--)
    {
-      afineTextureSpan(wallstart[b1], x - 1, b1, wall);
+      perfectTextureSpan(wallstart[b1], x - 1, b1, wall);
    }
 }
 #endif
