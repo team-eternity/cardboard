@@ -27,6 +27,8 @@
 #define MAX_WIDTH  1280
 #define MAX_HEIGHT 1024
 
+#define SPAN_WALL
+
 // -- Rendering --
 struct lightblend_t
 {

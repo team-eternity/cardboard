@@ -29,6 +29,8 @@
 #include "visplane.h"
 #include "vectors.h"
 
+#include <assert.h>
+
 
 // -- Camera --
 
@@ -204,7 +206,7 @@ struct wall_t
 };
 
 
-
+#ifndef SPAN_WALL
 void renderWall1s(wall_t wall)
 {
    float basescale, yscale, xscale;
@@ -255,10 +257,10 @@ void renderWall1s(wall_t wall)
          //      1
          // ------------
          //   yfoc * y
-         basescale = yscale = xscale = 1.0f / (wall.dist * view.yfoc);
+         basescale = xscale = 1.0f / (wall.dist * view.yfoc);
 
-         yscale *= wall.yscale;
-         xscale *= wall.xscale;
+         yscale = basescale * wall.yscale;
+         xscale = basescale * wall.xscale;
 
          // Fixed numbers 16.16 format
          column.ystep = (int)(yscale * 65536.0);
@@ -286,7 +288,133 @@ void renderWall1s(wall_t wall)
       wall.tpeg += wall.tpegstep;
    }
 }
+#else
+int walltop[MAX_WIDTH];
+int wallbottom[MAX_WIDTH];
+int wallstart[MAX_HEIGHT];
 
+void fillSpan(int x1, int x2, int y, Uint32 color)
+{
+   Uint32 *buffer = (Uint32 *)screen->getBuffer();
+   Uint32 *pixels = buffer + (y * view.width) + x1;
+   int count = x2 - x1 + 1;
+
+   while (count > 0)
+   {
+      *pixels = color;
+      pixels++;
+      count--;
+   }
+}
+
+void renderWall1s(wall_t wall)
+{
+   float top, bottom;
+   int miny = MAX_HEIGHT;
+   int maxy = 0;
+
+   top = wall.top;
+   bottom = wall.bottom;
+
+   // Iterate over the columns, generate silhouette
+   for (int i = wall.x1; i <= wall.x2; i++)
+   {
+      int ctop, cbot;
+      int ytop, ybot;
+      int ymark;
+
+      ctop = (int)cliptop[i];
+      cbot = (int)clipbot[i];
+
+      ytop = top < ctop ? ctop : (int)top;
+      ybot = bottom > cbot ? cbot : (int)bottom;
+
+      if(ytop < miny) miny = ytop;
+      if(ybot > maxy) maxy = ybot;
+
+      ymark = ytop - 1 < cbot ? ytop - 1 : cbot;
+      if (wall.markceiling && wall.ceilingp && ymark > ctop)
+      {
+
+         wall.ceilingp->top[i] = ctop;
+         wall.ceilingp->bot[i] = ymark;
+      }
+
+      ymark = ybot + 1 > ctop ? ybot + 1 : ctop;
+      if (wall.markfloor && wall.floorp && ymark < cbot)
+      {
+         wall.floorp->top[i] = ymark;
+         wall.floorp->bot[i] = cbot;
+      }
+
+      // Close the column
+      cliptop[i] = ybot;
+      clipbot[i] = ytop;
+
+      if (wall.middle)
+      {
+         walltop[i] = ytop;
+         wallbottom[i] = ybot;
+      }
+
+      top += wall.topstep;
+      bottom += wall.bottomstep;
+   }
+
+   // Iterate over the rows
+   int x = wall.x1;
+   int stop = wall.x2 + 1;
+
+   int t1 = INT_MAX, t2 = INT_MAX;
+   int lastt2 = t2;
+   int b1 = 0, b2 = 0;
+   int lastb2 = b2;
+
+   for (; x < stop; x++)
+   {
+      t1 = lastt2;
+      t2 = walltop[x];
+      b1 = lastb2;
+      b2 = wallbottom[x];
+
+      // GROSS: I forgot this loop modifies t1, t2, b1, and b2;
+      lastt2 = t2;
+      lastb2 = b2;
+
+      for (; t2 > t1 && t1 <= b1; t1++)
+      {
+         fillSpan(wallstart[t1], x - 1, t1, 0xffffffff);
+      }
+      for (; b2 < b1 && t1 <= b1; b1--)
+      {
+         fillSpan(wallstart[b1], x - 1, b1, 0xffffffff);
+      }
+
+      while (t2 < t1 && t2 <= b2)
+      {
+         wallstart[t2++] = x;
+      }
+      while (b2 > b1 && t2 <= b2)
+      {
+         wallstart[b2--] = x;
+      }
+   }
+
+   t1 = lastt2;
+   t2 = INT_MAX;
+   b1 = lastb2;
+   b2 = 0;
+
+   for (; t2 > t1 && t1 <= b1; t1++)
+   {
+      fillSpan(wallstart[t1], x - 1, t1, 0xffffffff);
+   }
+   for (; b2 < b1 && t1 <= b1; b1--)
+   {
+      fillSpan(wallstart[b1], x - 1, b1, 0xffffffff);
+   }
+}
+#endif
 
 void renderWall2s(wall_t wall)
 {
@@ -701,6 +829,7 @@ void projectWall(mapline_t *line)
       wall.highstep = wall.topstep = (high2 - high1) * istep;
       wall.lowstep = wall.bottomstep = (low2 - low1) * istep;
       wall.tpegstep = (peg2 - peg1) * istep;
+      wall.lpeg = wall.lpegstep = 0;
 
       wall.upper = wall.lower = false;
       wall.middle = true;
@@ -784,6 +913,8 @@ void projectWall(mapline_t *line)
          wall.topstep = (top2 - top1) * istep;
          wall.highstep = 0;
 
+         wall.tpeg = wall.tpegstep = 0;
+
          wall.upper = false;
       }
 
@@ -859,6 +990,8 @@ void projectWall(mapline_t *line)
          wall.bottomstep = (bottom2 - bottom1) * istep;
          wall.lowstep = 0;
          wall.lower = false;
+         wall.lpeg = wall.lpegstep = 0;
+
       }
 
       wall.middle = false;
