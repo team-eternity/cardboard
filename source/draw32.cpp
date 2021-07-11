@@ -82,9 +82,9 @@ lightblend_t calcLight(float distance, float map, light_t light)
 
     result.fogadd = getFogColor(flight, light.f_r, light.f_g, light.f_b);
 
-    result.l_r = (ulight * light.l_r) >> 8;
-    result.l_g = (ulight * light.l_g) >> 8;
-    result.l_b = (ulight * light.l_b) >> 8;
+    result.l_r = ((ulight * light.l_r) >> 8) + 1;
+    result.l_g = ((ulight * light.l_g) >> 8) + 1;
+    result.l_b = ((ulight * light.l_b) >> 8) + 1;
 
     return result;
 }
