@@ -83,6 +83,7 @@ struct rslopespan_t
 Uint32 getFogColor(Uint16 level, Uint8 r, Uint8 g, Uint8 b);
 slopelightblend_t calcSlopeLight(float distance, float map, light_t light);
 lightblend_t calcLight(float distance, float map, light_t light);
+void drawColumnChunk(rendercolumn_t* columns, void* destBuffer, int chunkWidth, int lowy, int highy, int startx);
 void drawColumn(rendercolumn_t column);
 void drawSpan(renderspan_t span);
 void drawSlopedSpan(rslopespan_t slopespan);

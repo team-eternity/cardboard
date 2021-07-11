@@ -163,6 +163,37 @@ void drawColumn(rendercolumn_t column)
 }
 
 
+void drawColumnChunk(rendercolumn_t *columns, void *destBuffer, int chunkWidth, int lowy, int highy, int startx)
+{
+   unsigned int sstep = view.width;
+
+   for (int y = lowy; y < highy; ++y)
+   {
+      Uint32* dest = ((Uint32*)destBuffer) + (y * view.width) + startx;
+
+      for (int i = 0; i < chunkWidth; ++i)
+      {
+         if (y < columns[i].y1 || y > columns[i].y2) goto skip;
+
+         Uint32* source = (Uint32*)columns[i].tex;
+         Uint16 r = columns[i].blend.l_r, g = columns[i].blend.l_g, b = columns[i].blend.l_b;
+         Uint32 fogadd = columns[i].blend.fogadd;
+
+         Uint32 texl = source[(columns[i].yfrac >> 16) & 0x3f];
+
+         *dest = (((texl & 0xFF) * b)
+            | (((texl & 0xFF00) * g) & 0xFF0000)
+            | ((texl * r) & 0xFF000000)) >> 8 + fogadd;
+
+         columns[i].yfrac += columns[i].ystep;
+
+      skip:
+         dest++;
+      }
+   }
+}
+
+
 // -- Span drawing --
 void drawSpan(renderspan_t span)
 {

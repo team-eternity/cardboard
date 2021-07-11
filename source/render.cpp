@@ -36,7 +36,7 @@ camera_t camera;
 viewport_t view;
 
 
-// -- Rendering -- 
+// -- Rendering --
 // set of functions for bit-specific rendering operations
 // renderfunc_t *render;
 
@@ -45,7 +45,7 @@ vidDriver *texture = NULL;
 
 
 
-// -- Clipping -- 
+// -- Clipping --
 // Much like in doom. The screen clipping array starts out open and closes up as walls
 // are rendered.
 float    cliptop[MAX_WIDTH], clipbot[MAX_WIDTH];
@@ -204,86 +204,99 @@ struct wall_t
 };
 
 
+// Ideally, this would be the number of pixels that fit on a cache line.
+#define COLUMN_CHUNK_WIDTH 16
+rendercolumn_t columns[COLUMN_CHUNK_WIDTH] = {};
 
 void renderWall1s(wall_t wall)
 {
-   float basescale, yscale, xscale;
-   int t, b;
-   int ctop, cbot;
+   void *destBuffer = (void*)screen->getBuffer();
+   void *tex = (void*)texture->getBuffer();
 
-   rendercolumn_t column;
+   int x = wall.x1;
 
-   column.screen = (void *)screen->getBuffer();
-   column.tex = (void *)texture->getBuffer();
-
-   for(int i = wall.x1; i <= wall.x2; i++)
+   for (; x < wall.x2; x += COLUMN_CHUNK_WIDTH)
    {
-      int m;
+      int lowy = screen->getHeight();
+      int highy = -1;
 
-      if(cliptop[i] >= clipbot[i])
-         goto skip;
-
-      ctop = (int)cliptop[i];
-      cbot = (int)clipbot[i];
-
-      t = wall.top < ctop ? ctop : (int)wall.top;
-      b = wall.bottom > cbot ? cbot : (int)wall.bottom;
-      
-      m = t - 1 < cbot ? t-1 : cbot;
-      if(wall.markceiling && wall.ceilingp && m > ctop)
+      int chunkWidth = COLUMN_CHUNK_WIDTH;
+      if (chunkWidth > (wall.x2 - x + 1))
       {
-
-         wall.ceilingp->top[i] = ctop;
-         wall.ceilingp->bot[i] = m;
+         chunkWidth = (wall.x2 - x + 1);
       }
 
-      m = b + 1 > ctop ? b + 1 : ctop;
-      if(wall.markfloor && wall.floorp && m < cbot)
+      for (int i = 0; i < chunkWidth; ++i)
       {
-         wall.floorp->top[i] = m;
-         wall.floorp->bot[i] = cbot;
-      }
-      
-      // Close the column
-      cliptop[i] = b;
-      clipbot[i] = t;
+         float basescale, yscale, xscale;
+         int t, b;
+         int ctop, cbot;
+         int columnx = x + i;
 
-      if(wall.middle)
-      {
-         // the actual scale is y / yfoc however, you have to divide 1 by dist (1/y)
-         // get y anyway so the resulting equasion is
-         //      1
-         // ------------
-         //   yfoc * y
-         basescale = yscale = xscale = 1.0f / (wall.dist * view.yfoc);
+         ctop = (int)cliptop[columnx];
+         cbot = (int)clipbot[columnx];
 
-         yscale *= wall.yscale;
-         xscale *= wall.xscale;
+         t = wall.top < ctop ? ctop : (int)wall.top;
+         b = wall.bottom > cbot ? cbot : (int)wall.bottom;
 
-         // Fixed numbers 16.16 format
-         column.ystep = (int)(yscale * 65536.0);
-         column.texx = ((int)((wall.len * xscale) + wall.xoffset) & 0x3f) * 64;
-         column.x = i;
-
-         column.blend = calcLight(wall.dist, 0, wall.sector->light);
-
-         column.y1 = t;
-         column.y2 = b;
-
-         if(t <= b)
+         int m = t - 1 < cbot ? t - 1 : cbot;
+         if (wall.markceiling && wall.ceilingp && m > ctop)
          {
-            column.yfrac = (int)((((column.y1 - wall.tpeg + 1) * yscale) + wall.yoffset) * 65536.0);
-            drawColumn(column);
+
+            wall.ceilingp->top[columnx] = ctop;
+            wall.ceilingp->bot[columnx] = m;
          }
+
+         m = b + 1 > ctop ? b + 1 : ctop;
+         if (wall.markfloor && wall.floorp && m < cbot)
+         {
+            wall.floorp->top[columnx] = m;
+            wall.floorp->bot[columnx] = cbot;
+         }
+
+         // Close the column
+         cliptop[columnx] = b;
+         clipbot[columnx] = t;
+
+         if(t < lowy) lowy = t;
+         if(b > highy) highy = b;
+
+         // TODO: Pull this out! There should be two different loops for rendering missing textures.
+         if (wall.middle)
+         {
+            // the actual scale is y / yfoc however, you have to divide 1 by dist (1/y)
+            // get y anyway so the resulting equasion is
+            //      1
+            // ------------
+            //   yfoc * y
+            yscale = xscale = 1.0f / (wall.dist * view.yfoc);
+
+            yscale *= wall.yscale;
+            xscale *= wall.xscale;
+
+            // Fixed numbers 16.16 format
+            columns[i].ystep = (int)(yscale * 65536.0);
+            columns[i].texx = ((int)((wall.len * xscale) + wall.xoffset) & 0x3f) * 64;
+
+            columns[i].blend = calcLight(wall.dist, 0, wall.sector->light);
+
+            columns[i].y1 = t;
+            columns[i].y2 = b;
+            columns[i].yfrac = (int)((((t - wall.tpeg + 1) * yscale) + wall.yoffset) * 65536.0);
+
+            columns[i].tex = ((Uint32 *)tex) + columns[i].texx;
+         }
+
+         wall.dist += wall.diststep;
+         wall.len += wall.lenstep;
+         wall.top += wall.topstep;
+         wall.bottom += wall.bottomstep;
+         wall.tpeg += wall.tpegstep;
       }
 
-      skip:
+      if(!wall.middle) continue;
 
-      wall.dist += wall.diststep;
-      wall.len += wall.lenstep;
-      wall.top += wall.topstep;
-      wall.bottom += wall.bottomstep;
-      wall.tpeg += wall.tpegstep;
+      drawColumnChunk(columns, destBuffer, chunkWidth, lowy, highy, x);
    }
 }
 
@@ -303,7 +316,7 @@ void renderWall2s(wall_t wall)
    {
       if(cliptop[i] >= clipbot[i])
          goto skip;
-      
+
       ctop = (int)cliptop[i];
       cbot = (int)clipbot[i];
 
@@ -324,7 +337,7 @@ void renderWall2s(wall_t wall)
          wall.floorp->top[i] = m;
          wall.floorp->bot[i] = cbot;
       }
-      
+
       if(wall.upper || wall.lower)
       {
          // the actual scale is y / yfov however, you have to divide 1 by dist (1/y)
@@ -351,7 +364,7 @@ void renderWall2s(wall_t wall)
 
          column.y1 = t;
          column.y2 = h;
-         
+
          if(t <= h)
          {
             column.yfrac = (int)((((column.y1 - wall.tpeg + 1) * yscale) + wall.yoffset) * 65536.0);
@@ -586,7 +599,7 @@ void projectWall(mapline_t *line)
    toffset.x += side->xoffset;
    toffset.y += side->yoffset;
 
-   // SoM: Handle the case where a wall is only occupying a single post but 
+   // SoM: Handle the case where a wall is only occupying a single post but
    // still needs to be rendered to keep groups of single post walls from not
    // being rendered and causing slime trails.
    floorx1 = (float)floor(x1 + 0.999f);
@@ -625,7 +638,7 @@ void projectWall(mapline_t *line)
    //                       (height - camz) * yfov
    //  screeny = ycenter - ------------------------
    //                               y
-   
+
    float top1, top2, high1, high2, low1, low2, bottom1, bottom2;
 
    // MaxW: These need initialising, otherwise low1 gets used before assigned a value
@@ -788,7 +801,7 @@ void projectWall(mapline_t *line)
       }
 
 
-      
+
       // Now do the floor!!
       if(sector->fslope)
       {
@@ -905,7 +918,7 @@ void projectWall(mapline_t *line)
       wall.ceilingp = checkVisplane(findVisplane(sector->ceilingz, sector->light, sector->cslope), floorx1, floorx2);
    else
       wall.ceilingp = NULL;
- 
+
 
    // Round the pixel values as a last step;
    wall.x1 = floorx1;
