@@ -24,8 +24,8 @@
 #include "matrix.h"
 #include "video.h"
 
-#define MAX_WIDTH  1280
-#define MAX_HEIGHT 1024
+#define MAX_WIDTH  1920
+#define MAX_HEIGHT 1080
 
 // -- Rendering --
 struct lightblend_t

@@ -47,7 +47,7 @@ int main (int argc, char **argv)
    if(result == -1)
       return -1;
 
-   screen = vidDriver::setVideoMode(800, 600, 32, 0);
+   screen = vidDriver::setVideoMode(1920, 1080, 32, 0);
    
    SDL_Event e;
    bool update = true, up = false, down = false;
