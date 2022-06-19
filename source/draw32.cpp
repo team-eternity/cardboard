@@ -153,9 +153,9 @@ void drawColumn(rendercolumn_t column)
    {
        Uint32 texl = source[(texy >> 16) & 0x3f];
        
-       *dest = (((texl & 0xFF) * b)
-         | (((texl & 0xFF00) * g) & 0xFF0000)
-         | ((texl * r) & 0xFF000000)) >> 8 + fogadd;
+       *dest = (((((texl & 0xFF) * b)
+          | (((texl & 0xFF00) * g) & 0xFF0000)
+          | ((texl * r) & 0xFF000000))) >> 8) + fogadd;
 
       dest += sstep;
       texy += ystep;
@@ -181,9 +181,9 @@ void drawColumnChunk(rendercolumn_t *columns, void *destBuffer, int chunkWidth, 
 
          Uint32 texl = source[(columns[i].yfrac >> 16) & 0x3f];
 
-         *dest = (((texl & 0xFF) * b)
+         *dest = ((((texl & 0xFF) * b)
             | (((texl & 0xFF00) * g) & 0xFF0000)
-            | ((texl * r) & 0xFF000000)) >> 8 + fogadd;
+            | ((texl * r) & 0xFF000000)) >> 8) + fogadd;
 
          columns[i].yfrac += columns[i].ystep;
 
@@ -213,9 +213,9 @@ void drawSpan(renderspan_t span)
    {
       Uint32 texl = source[((xf >> 16) & 63) * 64 + ((yf >> 16) & 63)];
 
-      *dest = ((((texl & 0xFF) * b)
+      *dest = (((((texl & 0xFF) * b)
          | (((texl & 0xFF00) * g) & 0xFF0000)
-         | ((texl * r) & 0xFF000000))) >> 8 + fogadd;
+         | ((texl * r) & 0xFF000000))) >> 8) + fogadd;
 
       dest++;
       xf += xs;

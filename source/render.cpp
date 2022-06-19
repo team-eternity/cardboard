@@ -616,7 +616,7 @@ void projectWall(mapline_t *line)
    else
       istep = 1.0f;
 
-   wall_t wall;
+   wall_t wall{ };
    wall.length = (t2 - t1).getLength();
 
    wall.dist = i1;
