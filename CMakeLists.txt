@@ -12,8 +12,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(ExternalLibraries)
 
 add_executable(cardboard
-    source/draw8.cpp
-    source/draw16.cpp
     source/draw32.cpp
     source/error.cpp
     source/error.h
